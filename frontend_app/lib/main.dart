@@ -1,6 +1,6 @@
-// frontend_app/lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() {
   runApp(const RealTimeTranslatorApp());
@@ -30,8 +30,6 @@ class TranslationScreen extends StatefulWidget {
 }
 
 class _TranslationScreenState extends State<TranslationScreen> {
-  // ध्यान दें: यहाँ अपने FastAPI सर्वर का WebSocket URL डालना 
-  // (अगर लोकल टेस्ट कर रहे हो तो अपने कंप्यूटर का IP एड्रेस डालें, localhost मोबाइल पर काम नहीं करता)
   final _channel = WebSocketChannel.connect(
     Uri.parse('ws://10.0.2.2:8000/ws/translate'),
   );
@@ -41,10 +39,8 @@ class _TranslationScreenState extends State<TranslationScreen> {
   @override
   void initState() {
     super.initState();
-    // सर्वर से आने वाले ट्रांसलेटेड ऑडियो को सुनना
     _channel.stream.listen(
       (message) {
-        // यहाँ सर्वर से मिलने वाले ऑडियो बाइट्स प्रोसेस होंगे
         print("Received audio chunk from server");
       },
       onError: (error) {
@@ -56,14 +52,43 @@ class _TranslationScreenState extends State<TranslationScreen> {
     );
   }
 
-  void toggleTranslation() {
+  // माइक की परमिशन चेक करने और मांगने का फंक्शन
+  Future<bool> _requestMicrophonePermission() async {
+    var status = await Permission.microphone.status;
+    if (status.isGranted) {
+      return true;
+    } else if (status.isDenied) {
+      // परमिशन मांगना
+      status = await Permission.microphone.request();
+      return status.isGranted;
+    } else if (status.isPermanentlyDenied) {
+      // अगर यूजर ने हमेशा के लिए ब्लॉक कर दिया हो तो सेटिंग ओपन करवाना
+      openAppSettings();
+      return false;
+    }
+    return false;
+  }
+
+  void toggleTranslation() async {
+    if (!isTranslating) {
+      // ट्रांसलेशन शुरू करने से पहले माइक की परमिशन चेक करो
+      bool hasPermission = await _requestMicrophonePermission();
+      if (!hasPermission) {
+        // अगर परमिशन नहीं मिली तो आगे मत बढ़ो
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Microphone permission is required to translate!")),
+        );
+        return;
+      }
+    }
+
     setState(() {
       isTranslating = !isTranslating;
     });
 
     if (isTranslating) {
-      print("Translation & Audio Streaming Started...");
-      // यहाँ माइक से रिकॉर्डिंग शुरू करके WebSocket पर भेजने का कोड आएगा
+      print("Microphone Permission Granted. Translation & Audio Streaming Started...");
+      // यहाँ आगे रिकॉर्डर (जैसे record पैकेज) का शुरू होने वाला कोड डलेगा
     } else {
       print("Translation Stopped.");
     }
