@@ -1,0 +1,1 @@
+name: calculatordescription: A simple calculator appversion: 1.0.0+1environment:  sdk: '>=2.12.0 <3.0.0'dependencies:  flutter:    sdk: flutterdev_dependencies:  flutter_test:    sdk: flutterflutter:  uses-material-design: true
