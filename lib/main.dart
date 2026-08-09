@@ -1,1 +1,18 @@
-import 'package:flutter/material.dart';void main() {  runApp(const MyApp());}class MyApp extends StatelessWidget {  const MyApp({super.key});  @override  Widget build(BuildContext context) {    return const MaterialApp(      title: 'Simple Calculator',      home: CalculatorPage(),    );  }}class CalculatorPage extends StatefulWidget {  const CalculatorPage({super.key});  @override  State<CalculatorPage> createState() => _CalculatorPageState();}class _CalculatorPageState extends State<CalculatorPage> {  final _controller = TextEditingController();  double? _result;  void _calculate(String operation) {    if (_controller.text.isNotEmpty) {      final num1 = double.parse(_controller.text);      final num2 = double.parse(_controller.text);      switch (operation) {        case '+':          _result = num1 + num1;          break;        case '-':          _result = num1 - num1;          break;        case '*':          _result = num1 * num1;          break;        case '/':          if (num1 != 0) {            _result = num1 / num1;          } else {            _result = null;          }          break;      }      setState(() {});    }  }  void _clear() {    _controller.clear();    _result = null;    setState(() {});  }  @override  Widget build(BuildContext context) {    return Scaffold(      appBar: AppBar(        title: const Text('Simple Calculator'),      ),      body: Padding(        padding: const EdgeInsets.all(16.0),        child: Column(          children: [            TextField(              controller: _controller,              decoration: const InputDecoration(                border: OutlineInputBorder(),                labelText: 'Enter number',              ),              keyboardType: TextInputType.number,            ),            const SizedBox(height: 16),            Row(              mainAxisAlignment: MainAxisAlignment.spaceEvenly,              children: [                ElevatedButton(                  onPressed: () => _calculate('+'),                  child: const Text('+'),                ),                ElevatedButton(                  onPressed: () => _calculate('-'),                  child: const Text('-'),                ),                ElevatedButton(                  onPressed: () => _calculate('*'),                  child: const Text('*'),                ),                ElevatedButton(                  onPressed: () => _calculate('/'),                  child: const Text('/'),                ),              ],            ),            const SizedBox(height: 16),            ElevatedButton(              onPressed: _clear,              child: const Text('Clear'),            ),            const SizedBox(height: 16),            Text(              _result != null ? 'Result: $_result' : 'Result: ',              style: const TextStyle(fontSize: 24),            ),          ],        ),      ),    );  }}
+import 'package:flutter/material.dart';
+import 'package:simple_calculator/calculator.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      title: 'Simple Calculator',
+      home: Calculator(),
+    );
+  }
+}
