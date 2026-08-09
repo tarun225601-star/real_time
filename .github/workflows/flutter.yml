@@ -1,1 +1,25 @@
-name: Build APKon: [push]jobs:  build:    runs-on: ubuntu-latest    steps:      - uses: actions/checkout@v3      - uses: subosito/flutter-action@v2        with:          flutter-version: '3.x'      - run: flutter pub get      - run: flutter build apk --release      - uses: actions/upload-artifact@v3        with:          name: release-apk          path: build/app/outputs/flutter-apk/app-release.apk
+name: Flutter
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Run tests
+        run: flutter test
+      - name: Build and deploy
+        run: flutter build web
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REF: ${{ github.event.pull_request.number }}
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
