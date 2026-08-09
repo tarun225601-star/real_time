@@ -1,1 +1,65 @@
-import 'package:flutter/material.dart';import 'package:instagram_clone/models/post_model.dart';import 'package:instagram_clone/screens/feed_screen.dart';import 'package:instagram_clone/screens/login_screen.dart';void main() {  runApp(const MyApp());}class MyApp extends StatelessWidget {  const MyApp({Key? key}) : super(key: key);  @override  Widget build(BuildContext context) {    return MaterialApp(      title: 'Instagram Clone',      theme: ThemeData(        primarySwatch: Colors.blue,      ),      home: const LoginScreen(),    );  }}class LoginScreen extends StatefulWidget {  const LoginScreen({Key? key}) : super(key: key);  @override  State<LoginScreen> createState() => _LoginScreenState();}class _LoginScreenState extends State<LoginScreen> {  final _usernameController = TextEditingController();  final _passwordController = TextEditingController();  @override  Widget build(BuildContext context) {    return Scaffold(      body: Padding(        padding: const EdgeInsets.all(20.0),        child: Column(          children: [            TextField(              controller: _usernameController,              decoration: const InputDecoration(                labelText: 'Username',                border: OutlineInputBorder(),              ),            ),            const SizedBox(height: 20),            TextField(              controller: _passwordController,              decoration: const InputDecoration(                labelText: 'Password',                border: OutlineInputBorder(),              ),              obscureText: true,            ),            const SizedBox(height: 20),            ElevatedButton(              onPressed: () {                Navigator.pushReplacement(                  context,                  MaterialPageRoute(builder: (context) => const FeedScreen()),                );              },              child: const Text('Login'),            ),          ],        ),      ),    );  }}class FeedScreen extends StatefulWidget {  const FeedScreen({Key? key}) : super(key: key);  @override  State<FeedScreen> createState() => _FeedScreenState();}class _FeedScreenState extends State<FeedScreen> {  final List<PostModel> _posts = [    PostModel(      username: 'john_doe',      profilePicture: 'https://via.placeholder.com/150',      postImage: 'https://via.placeholder.com/300',      caption: 'This is a sample post',      likes: 100,      comments: 50,    ),    PostModel(      username: 'jane_doe',      profilePicture: 'https://via.placeholder.com/150',      postImage: 'https://via.placeholder.com/300',      caption: 'This is another sample post',      likes: 50,      comments: 20,    ),  ];  @override  Widget build(BuildContext context) {    return Scaffold(      appBar: AppBar(        title: const Text('Instagram Clone'),      ),      body: ListView.builder(        itemCount: _posts.length,        itemBuilder: (context, index) {          return Padding(            padding: const EdgeInsets.all(10.0),            child: Column(              children: [                Row(                  children: [                    CircleAvatar(                      backgroundImage: NetworkImage(_posts[index].profilePicture),                    ),                    const SizedBox(width: 10),                    Text(_posts[index].username),                  ],                ),                const SizedBox(height: 10),                Image.network(_posts[index].postImage),                const SizedBox(height: 10),                Text(_posts[index].caption),                const SizedBox(height: 10),                Row(                  children: [                    ElevatedButton(                      onPressed: () {},                      child: const Text('Like'),                    ),                    const SizedBox(width: 10),                    ElevatedButton(                      onPressed: () {},                      child: const Text('Comment'),                    ),                  ],                ),              ],            ),          );        },      ),    );  }}
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Instagram Clone',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({Key? key}) : super(key: key);
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final _auth = FirebaseAuth.instance;
+  String _username = '';
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Instagram Clone'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () async {
+                await _auth.signInAnonymously();
+              },
+              child: const Text('Login'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                await _auth.signOut();
+              },
+              child: const Text('Logout'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
