@@ -1,1 +1,41 @@
-import 'package:flutter/material.dart';import 'package:instagram_clone/models/post_model.dart';import 'package:instagram_clone/screens/feed_screen.dart';import 'package:instagram_clone/screens/login_screen.dart';void main() {  runApp(const MyApp());}class MyApp extends StatelessWidget {  const MyApp({Key? key}) : super(key: key);  @override  Widget build(BuildContext context) {    return MaterialApp(      title: 'Instagram Clone',      theme: ThemeData(        primarySwatch: Colors.blue,      ),      home: const LoginScreen(),    );  }}class LoginScreen extends StatefulWidget {  const LoginScreen({Key? key}) : super(key: key);  @override  State<LoginScreen> createState() => _LoginScreenState();}class _LoginScreenState extends State<LoginScreen> {  final _usernameController = TextEditingController();  final _passwordController = TextEditingController();  @override  Widget build(BuildContext context) {    return Scaffold(      body: Column(        children: [          TextField(            controller: _usernameController,            decoration: const InputDecoration(              labelText: 'Username',            ),          ),          TextField(            controller: _passwordController,            decoration: const InputDecoration(              labelText: 'Password',            ),          ),          ElevatedButton(            onPressed: () {              Navigator.pushReplacement(                context,                MaterialPageRoute(builder: (context) => const FeedScreen()),              );            },            child: const Text('Login'),          ),        ],      ),    );  }}class FeedScreen extends StatefulWidget {  const FeedScreen({Key? key}) : super(key: key);  @override  State<FeedScreen> createState() => _FeedScreenState();}class _FeedScreenState extends State<FeedScreen> {  final List<PostModel> _posts = [    PostModel(      username: 'john_doe',      caption: 'This is a sample post',      imageUrl: 'https://via.placeholder.com/150',    ),    PostModel(      username: 'jane_doe',      caption: 'This is another sample post',      imageUrl: 'https://via.placeholder.com/150',    ),  ];  @override  Widget build(BuildContext context) {    return Scaffold(      body: ListView.builder(        itemCount: _posts.length,        itemBuilder: (context, index) {          return Column(            children: [              Row(                children: [                  Text(_posts[index].username),                  const SizedBox(width: 10),                  Text(_posts[index].caption),                ],              ),              Image.network(_posts[index].imageUrl),            ],          );        },      ),    );  }}
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Instagram App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({Key? key}) : super(key: key);
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Instagram App'),
+      ),
+      body: const Center(
+        child: Text('Hello, World!'),
+      ),
+    );
+  }
+}
