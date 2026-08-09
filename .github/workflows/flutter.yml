@@ -1,25 +1,13 @@
-name: Flutter
-on:
-  push:
-    branches:
-      - main
+name: Build Flutter App
+on: [push, pull_request]
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Install dependencies
-        run: flutter pub get
-      - name: Run tests
-        run: flutter test
-      - name: Build and deploy
-        run: flutter build web
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REF: ${{ github.event.pull_request.number }}
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build/web
+          flutter-version: '3.19.x'
+          channel: 'stable'
+      - run: flutter pub get
+      - run: flutter build appbundle --release
