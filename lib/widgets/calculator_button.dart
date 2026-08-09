@@ -1,20 +1,15 @@
 import 'package:flutter/material.dart';
 
-typedef void ButtonPressedCallback(String value);
-
 class CalculatorButton extends StatelessWidget {
-  final ButtonPressedCallback _onPressed;
-  final String _value;
+  final String value;
+  final Function onClick;
 
-  const CalculatorButton({Key? key, required ButtonPressedCallback onPressed, required String value})
-      : _onPressed = onPressed,
-        _value = value,
-        super(key: key);
+  const CalculatorButton({Key? key, required this.value, required this.onClick}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => _onPressed(_value),
+      onTap: () => onClick(value),
       child: Container(
         margin: const EdgeInsets.all(8),
         decoration: BoxDecoration(
@@ -23,7 +18,7 @@ class CalculatorButton extends StatelessWidget {
         ),
         child: Center(
           child: Text(
-            _value,
+            value,
             style: const TextStyle(fontSize: 24),
           ),
         ),
