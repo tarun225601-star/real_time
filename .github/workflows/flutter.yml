@@ -1,3 +1,4 @@
+
 name: Flutter Build
 
 on:
@@ -10,11 +11,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.0.5'
-      - name: Flutter analyze
+          flutter-version: 'latest'
+
+      - name: Build Flutter App
+        run: flutter build apk --release
+
+      - name: Analyze Flutter Code
         run: flutter analyze
-      - name: Flutter build
-        run: flutter build apk
