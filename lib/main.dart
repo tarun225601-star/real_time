@@ -54,7 +54,8 @@ class _CalculatorPageState extends State<CalculatorPage> {
           .replaceAll('Ã·', '/')
           .replaceAll('%', '/100')
           .replaceAll(' ', '')
-          .toStringAsFixed(2);
+          double.parse(expression).toStringAsFixed(2);
+
     } catch (e) {
       return 'Error';
     }
