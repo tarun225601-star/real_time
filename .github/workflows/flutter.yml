@@ -1,14 +1,12 @@
-name: Flutter Build and Test
+name: Flutter Workflow
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
       - name: Install dependencies
         run: flutter pub get
       - name: Run tests
