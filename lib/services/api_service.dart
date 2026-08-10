@@ -1,1 +1,6 @@
-import 'package:http/http.dart' as http;import 'dart:convert';import 'package:your_app_name/models/app_model.dart';class ApiService {  final String _baseUrl = 'https://your-api-url.com';  Future<List<AppModel>> fetchAppModels() async {    final response = await http.get(Uri.parse('$_baseUrl/app_models'));    if (response.statusCode == 200) {      final List jsonList = jsonDecode(response.body);      return jsonList.map((json) => AppModel.fromJson(json)).toList();    } else {      throw Exception('Failed to load app models');    }  }}
+import 'http_client.dat';base64 encode the api_service.dap file.
+class ApiService {
+    getApi(channel: HTTPClasses.Channel) {
+        return HTTPClasses.get(channel);
+   }
+}
