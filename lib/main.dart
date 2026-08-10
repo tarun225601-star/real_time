@@ -1,1 +1,171 @@
-import 'package:flutter/material.dart';void main() {  runApp(const MyApp());}class MyApp extends StatelessWidget {  const MyApp({Key? key}) : super(key: key);  @override  Widget build(BuildContext context) {    return const MaterialApp(      home: Calculator(),    );  }}class Calculator extends StatefulWidget {  const Calculator({Key? key}) : super(key: key);  @override  State<Calculator> createState() => _CalculatorState();}class _CalculatorState extends State<Calculator> {  String _expression = '';  String _result = '';  void _onPressed(String value) {    setState(() {      if (value == 'C') {        _expression = '';        _result = '';      } else if (value == '=') {        try {          _result = _calculate(_expression).toString();        } catch (e) {          _result = 'Error';        }      } else {        _expression += value;      }    });  }  double _calculate(String expression) {    return eval(expression);  }  double eval(final String expression) {    return FunctionParser(expression).parse();  }  @override  Widget build(BuildContext context) {    return Scaffold(      body: Column(        children: [          Expanded(            child: Container(              padding: const EdgeInsets.all(16.0),              child: Column(                mainAxisAlignment: MainAxisAlignment.spaceBetween,                children: [                  Text(                    _expression,                    style: const TextStyle(fontSize: 24),                  ),                  Text(                    _result,                    style: const TextStyle(fontSize: 48),                  ),                ],              ),            ),          ),          Container(            padding: const EdgeInsets.all(16.0),            child: Column(              children: [                Row(                  mainAxisAlignment: MainAxisAlignment.spaceBetween,                  children: [                    ElevatedButton(                      onPressed: () => _onPressed('7'),                      child: const Text('7'),                    ),                    ElevatedButton(                      onPressed: () => _onPressed('8'),                      child: const Text('8'),                    ),                    ElevatedButton(                      onPressed: () => _onPressed('9'),                      child: const Text('9'),                    ),                    ElevatedButton(                      onPressed: () => _onPressed('/'),                      child: const Text('/'),                    ),                  ],                ),                Row(                  mainAxisAlignment: MainAxisAlignment.spaceBetween,                  children: [                    ElevatedButton(                      onPressed: () => _onPressed('4'),                      child: const Text('4'),                    ),                    ElevatedButton(                      onPressed: () => _onPressed('5'),                      child: const Text('5'),                    ),                    ElevatedButton(                      onPressed: () => _onPressed('6'),                      child: const Text('6'),                    ),                    ElevatedButton(                      onPressed: () => _onPressed('*'),                      child: const Text('*'),                    ),                  ],                ),                Row(                  mainAxisAlignment: MainAxisAlignment.spaceBetween,                  children: [                    ElevatedButton(                      onPressed: () => _onPressed('1'),                      child: const Text('1'),                    ),                    ElevatedButton(                      onPressed: () => _onPressed('2'),                      child: const Text('2'),                    ),                    ElevatedButton(                      onPressed: () => _onPressed('3'),                      child: const Text('3'),                    ),                    ElevatedButton(                      onPressed: () => _onPressed('-'),                      child: const Text('-'),                    ),                  ],                ),                Row(                  mainAxisAlignment: MainAxisAlignment.spaceBetween,                  children: [                    ElevatedButton(                      onPressed: () => _onPressed('0'),                      child: const Text('0'),                    ),                    ElevatedButton(                      onPressed: () => _onPressed('.'),                      child: const Text('.'),                    ),                    ElevatedButton(                      onPressed: () => _onPressed('C'),                      child: const Text('C'),                    ),                    ElevatedButton(                      onPressed: () => _onPressed('+'),                      child: const Text('+'),                    ),                  ],                ),                Row(                  mainAxisAlignment: MainAxisAlignment.spaceBetween,                  children: [                    ElevatedButton(                      onPressed: () => _onPressed('='),                      child: const Text('='),                    ),                  ],                ),              ],            ),          ),        ],      ),    );  }}class FunctionParser {  final String _expression;  FunctionParser(this._expression);  double parse() {    return _calculate(_expression);  }  double _calculate(String expression) {    // Implement your own calculation logic here    // For simplicity, this example uses the 'expr' package    // You can add the 'expr' package to your pubspec.yaml file    // and import it in your dart file    // import 'package:expr/expr.dart';    // return expr(expression).eval();    return 0;  }}
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Calculator App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const CalculatorPage(),
+    );
+  }
+}
+
+class CalculatorPage extends StatefulWidget {
+  const CalculatorPage({Key? key}) : super(key: key);
+
+  @override
+  State<CalculatorPage> createState() => _CalculatorPageState();
+}
+
+class _CalculatorPageState extends State<CalculatorPage> {
+  final _controller = TextEditingController(text: '0');
+  double _currentValue = 0;
+  double _previousValue = 0;
+  String _operation = '';
+
+  void _onPressed(String value) {
+    setState(() {
+      if (value == 'C') {
+        _controller.text = '0';
+        _currentValue = 0;
+        _previousValue = 0;
+        _operation = '';
+      } else if (value == '+' || value == '-' || value == '*' || value == '/') {
+        _previousValue = double.parse(_controller.text);
+        _operation = value;
+        _controller.text = '0';
+      } else if (value == '=') {
+        double currentValue = double.parse(_controller.text);
+        double result = 0;
+        switch (_operation) {
+          case '+':
+            result = _previousValue + currentValue;
+            break;
+          case '-':
+            result = _previousValue - currentValue;
+            break;
+          case '*':
+            result = _previousValue * currentValue;
+            break;
+          case '/':
+            result = _previousValue / currentValue;
+            break;
+        }
+        _controller.text = result.toStringAsFixed(2);
+      } else {
+        if (_controller.text == '0') {
+          _controller.text = value;
+        } else {
+          _controller.text += value;
+        }
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Calculator'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _controller,
+              readOnly: true,
+              textAlign: TextAlign.right,
+              style: const TextStyle(fontSize: 24),
+            ),
+            const SizedBox(height: 16),
+            GridView.count(
+              shrinkWrap: true,
+              crossAxisCount: 4,
+              childAspectRatio: 1.2,
+              children: [
+                ElevatedButton(
+                  onPressed: () => _onPressed('7'),
+                  child: const Text('7'),
+                ),
+                ElevatedButton(
+                  onPressed: () => _onPressed('8'),
+                  child: const Text('8'),
+                ),
+                ElevatedButton(
+                  onPressed: () => _onPressed('9'),
+                  child: const Text('9'),
+                ),
+                ElevatedButton(
+                  onPressed: () => _onPressed('/'),
+                  child: const Text('/'),
+                ),
+                ElevatedButton(
+                  onPressed: () => _onPressed('4'),
+                  child: const Text('4'),
+                ),
+                ElevatedButton(
+                  onPressed: () => _onPressed('5'),
+                  child: const Text('5'),
+                ),
+                ElevatedButton(
+                  onPressed: () => _onPressed('6'),
+                  child: const Text('6'),
+                ),
+                ElevatedButton(
+                  onPressed: () => _onPressed('*'),
+                  child: const Text('*'),
+                ),
+                ElevatedButton(
+                  onPressed: () => _onPressed('1'),
+                  child: const Text('1'),
+                ),
+                ElevatedButton(
+                  onPressed: () => _onPressed('2'),
+                  child: const Text('2'),
+                ),
+                ElevatedButton(
+                  onPressed: () => _onPressed('3'),
+                  child: const Text('3'),
+                ),
+                ElevatedButton(
+                  onPressed: () => _onPressed('-'),
+                  child: const Text('-'),
+                ),
+                ElevatedButton(
+                  onPressed: () => _onPressed('0'),
+                  child: const Text('0'),
+                ),
+                ElevatedButton(
+                  onPressed: () => _onPressed('.'),
+                  child: const Text('.'),
+                ),
+                ElevatedButton(
+                  onPressed: () => _onPressed('='),
+                  child: const Text('='),
+                ),
+                ElevatedButton(
+                  onPressed: () => _onPressed('+'),
+                  child: const Text('+'),
+                ),
+                ElevatedButton(
+                  onPressed: () => _onPressed('C'),
+                  child: const Text('C'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
