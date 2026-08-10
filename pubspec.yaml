@@ -1,1 +1,1 @@
-name: your_app_namedescription: Your app descriptionversion: 1.0.0+1environment:  sdk: '>=2.17.0 <3.0.0'dependencies:  flutter:    sdk: flutter  provider: ^6.0.3  http: ^0.13.5  shared_preferences: ^2.1.1dev_dependencies:  flutter_test:    sdk: flutterflutter:  uses-material-design: true
+name: myapp\nescobration: 1.0.0\ntesting-dependencies.calbatic: 3.0.0}
