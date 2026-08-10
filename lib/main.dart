@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Simple Calculator',
+      title: 'Calculator App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -27,152 +27,108 @@ class CalculatorPage extends StatefulWidget {
 }
 
 class _CalculatorPageState extends State<CalculatorPage> {
-  final _controller = TextEditingController(text: '0');
-  double _currentValue = 0;
-  double _previousValue = 0;
-  String _operation = '';
+  String _expression = '';
+  String _result = '';
 
   void _onPressed(String value) {
     setState(() {
-      if (value == '+' || value == '-' || value == '*' || value == '/') {
-        _previousValue = double.parse(_controller.text);
-        _operation = value;
-        _controller.text = '0';
-      } else if (value == '=') {
-        double currentValue = double.parse(_controller.text);
-        double result;
-        switch (_operation) {
-          case '+':
-            result = _previousValue + currentValue;
-            break;
-          case '-':
-            result = _previousValue - currentValue;
-            break;
-          case '*':
-            result = _previousValue * currentValue;
-            break;
-          case '/':
-            result = _previousValue / currentValue;
-            break;
-          default:
-            result = 0;
+      if (value == '=') {
+        try {
+          _result = _calculate(_expression);
+        } catch (e) {
+          _result = 'Error';
         }
-        _controller.text = result.toString();
+      } else if (value == 'C') {
+        _expression = '';
+        _result = '';
       } else {
-        if (_controller.text == '0') {
-          _controller.text = value;
-        } else {
-          _controller.text += value;
-        }
+        _expression += value;
       }
     });
+  }
+
+  String _calculate(String expression) {
+    try {
+      return expression
+          .replaceAll('Ã', '*')
+          .replaceAll('Ã·', '/')
+          .replaceAll('%', '/100')
+          .replaceAll(' ', '')
+          .toStringAsFixed(2);
+    } catch (e) {
+      return 'Error';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Simple Calculator'),
+        title: const Text('Calculator'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _controller,
-              readOnly: true,
-              textAlign: TextAlign.right,
-              style: const TextStyle(fontSize: 48),
+      body: Column(
+        children: [
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    _expression,
+                    style: const TextStyle(fontSize: 24),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    _result,
+                    style: const TextStyle(fontSize: 48),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          ),
+          Expanded(
+            flex: 2,
+            child: GridView.count(
+              crossAxisCount: 4,
+              childAspectRatio: 1.2,
               children: [
-                ElevatedButton(
-                  onPressed: () => _onPressed('7'),
-                  child: const Text('7'),
-                ),
-                ElevatedButton(
-                  onPressed: () => _onPressed('8'),
-                  child: const Text('8'),
-                ),
-                ElevatedButton(
-                  onPressed: () => _onPressed('9'),
-                  child: const Text('9'),
-                ),
-                ElevatedButton(
-                  onPressed: () => _onPressed('/'),
-                  child: const Text('/'),
-                ),
+                _buildButton('7'),
+                _buildButton('8'),
+                _buildButton('9'),
+                _buildButton('Ã·'),
+                _buildButton('4'),
+                _buildButton('5'),
+                _buildButton('6'),
+                _buildButton('Ã'),
+                _buildButton('1'),
+                _buildButton('2'),
+                _buildButton('3'),
+                _buildButton('-'),
+                _buildButton('0'),
+                _buildButton('.'),
+                _buildButton('='),
+                _buildButton('+'),
+                _buildButton('C'),
+                _buildButton('%'),
+                _buildButton(''),
+                _buildButton(''),
+                _buildButton(''),
+                _buildButton(''),
               ],
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () => _onPressed('4'),
-                  child: const Text('4'),
-                ),
-                ElevatedButton(
-                  onPressed: () => _onPressed('5'),
-                  child: const Text('5'),
-                ),
-                ElevatedButton(
-                  onPressed: () => _onPressed('6'),
-                  child: const Text('6'),
-                ),
-                ElevatedButton(
-                  onPressed: () => _onPressed('*'),
-                  child: const Text('*'),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () => _onPressed('1'),
-                  child: const Text('1'),
-                ),
-                ElevatedButton(
-                  onPressed: () => _onPressed('2'),
-                  child: const Text('2'),
-                ),
-                ElevatedButton(
-                  onPressed: () => _onPressed('3'),
-                  child: const Text('3'),
-                ),
-                ElevatedButton(
-                  onPressed: () => _onPressed('-'),
-                  child: const Text('-'),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () => _onPressed('0'),
-                  child: const Text('0'),
-                ),
-                ElevatedButton(
-                  onPressed: () => _onPressed('='),
-                  child: const Text('='),
-                ),
-                ElevatedButton(
-                  onPressed: () => _onPressed('+'),
-                  child: const Text('+'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    _controller.text = '0';
-                  },
-                  child: const Text('C'),
-                ),
-              ],
-            ),
-          ],
-        ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildButton(String value) {
+    return ElevatedButton(
+      onPressed: () => _onPressed(value),
+      child: Text(
+        value,
+        style: const TextStyle(fontSize: 24),
       ),
     );
   }
