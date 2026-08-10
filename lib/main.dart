@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Calculator App',
+      title: 'Simple Calculator',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -34,18 +34,13 @@ class _CalculatorPageState extends State<CalculatorPage> {
 
   void _onPressed(String value) {
     setState(() {
-      if (value == 'C') {
-        _controller.text = '0';
-        _currentValue = 0;
-        _previousValue = 0;
-        _operation = '';
-      } else if (value == '+' || value == '-' || value == '*' || value == '/') {
+      if (value == '+' || value == '-' || value == '*' || value == '/') {
         _previousValue = double.parse(_controller.text);
         _operation = value;
         _controller.text = '0';
       } else if (value == '=') {
         double currentValue = double.parse(_controller.text);
-        double result = 0;
+        double result;
         switch (_operation) {
           case '+':
             result = _previousValue + currentValue;
@@ -59,8 +54,10 @@ class _CalculatorPageState extends State<CalculatorPage> {
           case '/':
             result = _previousValue / currentValue;
             break;
+          default:
+            result = 0;
         }
-        _controller.text = result.toStringAsFixed(2);
+        _controller.text = result.toString();
       } else {
         if (_controller.text == '0') {
           _controller.text = value;
@@ -75,7 +72,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Calculator'),
+        title: const Text('Simple Calculator'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -85,13 +82,11 @@ class _CalculatorPageState extends State<CalculatorPage> {
               controller: _controller,
               readOnly: true,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontSize: 24),
+              style: const TextStyle(fontSize: 48),
             ),
             const SizedBox(height: 16),
-            GridView.count(
-              shrinkWrap: true,
-              crossAxisCount: 4,
-              childAspectRatio: 1.2,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
                   onPressed: () => _onPressed('7'),
@@ -109,6 +104,11 @@ class _CalculatorPageState extends State<CalculatorPage> {
                   onPressed: () => _onPressed('/'),
                   child: const Text('/'),
                 ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
                 ElevatedButton(
                   onPressed: () => _onPressed('4'),
                   child: const Text('4'),
@@ -125,6 +125,11 @@ class _CalculatorPageState extends State<CalculatorPage> {
                   onPressed: () => _onPressed('*'),
                   child: const Text('*'),
                 ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
                 ElevatedButton(
                   onPressed: () => _onPressed('1'),
                   child: const Text('1'),
@@ -141,13 +146,14 @@ class _CalculatorPageState extends State<CalculatorPage> {
                   onPressed: () => _onPressed('-'),
                   child: const Text('-'),
                 ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
                 ElevatedButton(
                   onPressed: () => _onPressed('0'),
                   child: const Text('0'),
-                ),
-                ElevatedButton(
-                  onPressed: () => _onPressed('.'),
-                  child: const Text('.'),
                 ),
                 ElevatedButton(
                   onPressed: () => _onPressed('='),
@@ -158,7 +164,9 @@ class _CalculatorPageState extends State<CalculatorPage> {
                   child: const Text('+'),
                 ),
                 ElevatedButton(
-                  onPressed: () => _onPressed('C'),
+                  onPressed: () {
+                    _controller.text = '0';
+                  },
                   child: const Text('C'),
                 ),
               ],
