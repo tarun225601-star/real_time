@@ -1,5 +1,36 @@
-import 'futter/schema.app.dart'; import 'futter/containers.dart'; import 'futter/containers/static.dart';
+import 'package:flutter/material.dart';
 
-funtion main() {
-    scherwinator.container();
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'My App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatelessWidget {
+  const MyHomePage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('My App'),
+      ),
+      body: const Center(
+        child: Text('Hello, World!'),
+      ),
+    );
+  }
 }
