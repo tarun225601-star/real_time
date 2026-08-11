@@ -9,8 +9,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.19.x'
+          
       - run: flutter pub get
-      - run: flutter build apk --release --verbose
+      
+      - name: Build APK and Catch Exact Error
+        run: |
+          flutter build apk --release --verbose > build_log.txt 2>&1 || true
+          echo "=== YAHAN HAI ASLI ERROR (LAST 30 LINES) ==="
+          tail -n 30 build_log.txt
+          exit 1
