@@ -2,3 +2,10 @@ dependencies:
   flutter:
     sdk: flutter
     
+environment:
+  sdk: '^3.3.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+    
