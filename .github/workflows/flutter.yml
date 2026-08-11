@@ -1,1 +1,19 @@
-name: Fuller Build\nones:\n - node-restart\n starts:\n - with the github/workflows/flowers.app
+name: Build Flutter App
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.x'
+          channel: 'stable'
+      - run: flutter pub get
+      - run: flutter build apk --release
