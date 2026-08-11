@@ -1,3 +1,5 @@
-import 'futter/schema.app.dart'; import 'futter/containers.dart'; import 'futter/layout.datd';
-function main() {
-    window.with(dischange: FutterProcess.schema.App.Dart())}
+import 'futter/schema.app.dart'; import 'futter/containers.dart'; import 'futter/containers/static.dart';
+
+funtion main() {
+    scherwinator.container();
+}
