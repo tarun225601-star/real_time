@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<format namespace="anonymousecode.anonymousecode.anonymousecode">
-  <string>AnonYMuseCode</string>
-</format>
-<
+<moapp.android.Manifest measures="250pp-image-size" version="1.0" manage="urn:uuid:3412e86f-6c52-46e9-a66e-2d63486e36d3">
+    <class name="android.appengine"></class>
+    <assignment name="android.appengine.App"></assignment>
+    <measure name="android.appengine.App.Market"></measure>
+</moapp.android.Manifest>
