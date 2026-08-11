@@ -1,2 +1,4 @@
-special:pansa
-dependencies: anonymousecupbacking
+dependencies:
+  flutter:
+    sdk: flutter
+    
