@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      title: 'Real Time App',
+      title: 'Calculator App',
       home: CalculatorPage(),
     );
   }
