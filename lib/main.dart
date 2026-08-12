@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:flutter/services.dart';
+import 'package:chewie/chewie.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 void main() {
   runApp(MyApp());
@@ -13,7 +20,6 @@ class MyApp extends StatelessWidget {
       title: 'TikTok Clone',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: Colors.black,
       ),
       home: MyHomePage(),
     );
@@ -26,156 +32,93 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _currentIndex = 0;
-  final List<Video> _videos = [
-    Video(
-      videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-      username: 'user1',
-      description: 'Video 1',
-      likeCount: 100,
-    ),
-    Video(
-      videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-      username: 'user2',
-      description: 'Video 2',
-      likeCount: 200,
-    ),
-    Video(
-      videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-      username: 'user3',
-      description: 'Video 3',
-      likeCount: 300,
-    ),
-  ];
-  List<VideoPlayerController> _videoControllers = [];
+  List<Video> _videos = [];
+  final _storage = FlutterSecureStorage();
+  final _dio = Dio();
+  final _videoPlayerController = VideoPlayerController.network(
+    'https://example.com/video.mp4',
+  );
+  ChewieController _chewieController;
 
   @override
   void initState() {
     super.initState();
-    for (var video in _videos) {
-      _videoControllers.add(VideoPlayerController.network(video.videoUrl));
-    }
+    _loadVideos();
+    _videoPlayerController.initialize().then((_) {
+      setState(() {});
+    });
+    _chewieController = ChewieController(
+      videoPlayerController: _videoPlayerController,
+      aspectRatio: 16 / 9,
+      autoPlay: true,
+      looping: true,
+    );
   }
 
   @override
   void dispose() {
-    for (var controller in _videoControllers) {
-      controller.dispose();
-    }
+    _videoPlayerController.dispose();
+    _chewieController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadVideos() async {
+    final response = await _dio.get('https://example.com/videos');
+    if (response.statusCode == 200) {
+      final jsonData = response.data;
+      setState(() {
+        _videos = jsonData.map((json) => Video.fromJson(json)).toList();
+      });
+    } else {
+      Fluttertoast.showToast(msg: 'Failed to load videos');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView.builder(
-        itemCount: _videos.length,
-        onPageChanged: (index) {
-          for (var i = 0; i < _videoControllers.length; i++) {
-            if (i != index) {
-              _videoControllers[i].pause();
-            }
-          }
-        },
-        itemBuilder: (context, index) {
-          return Stack(
-            children: [
-              VideoPlayer(_videoControllers[index])..initialize().then((_) {
-                _videoControllers[index].play();
-              }),
-              Positioned(
-                bottom: 0,
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  padding: EdgeInsets.all(10),
-                  child: Row(
+      appBar: AppBar(
+        title: Text('TikTok Clone'),
+      ),
+      body: _videos.isEmpty
+          ? Center(
+              child: SpinKitFadingCircle(
+                color: Colors.blue,
+                size: 50.0,
+              ),
+            )
+          : ListView.builder(
+              itemCount: _videos.length,
+              itemBuilder: (context, index) {
+                return Card(
+                  child: Column(
                     children: [
-                      CircleAvatar(
-                        backgroundImage: NetworkImage('https://via.placeholder.com/50'),
+                      Chewie(
+                        controller: _chewieController,
                       ),
-                      SizedBox(width: 10),
-                      Text(
-                        _videos[index].username,
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      SizedBox(width: 10),
-                      Text(
-                        _videos[index].description,
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      Spacer(),
-                      IconButton(
-                        icon: Icon(Icons.favorite_border),
-                        onPressed: () {},
-                      ),
-                      SizedBox(width: 10),
-                      Text(
-                        _videos[index].likeCount.toString(),
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      SizedBox(width: 10),
-                      IconButton(
-                        icon: Icon(Icons.chat_bubble_outline),
-                        onPressed: () {},
-                      ),
-                      SizedBox(width: 10),
-                      IconButton(
-                        icon: Icon(Icons.share),
-                        onPressed: () {},
-                      ),
+                      Text(_videos[index].title),
+                      Text(_videos[index].description),
                     ],
                   ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Discover',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.upload),
-            label: 'Upload',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.mail),
-            label: 'Inbox',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
+                );
+              },
+            ),
     );
   }
 }
 
 class Video {
-  final String videoUrl;
-  final String username;
+  final String title;
   final String description;
-  final int likeCount;
+  final String videoUrl;
 
-  Video({
-    required this.videoUrl,
-    required this.username,
-    required this.description,
-    required this.likeCount,
-  });
+  Video({this.title, this.description, this.videoUrl});
+
+  factory Video.fromJson(Map<String, dynamic> json) {
+    return Video(
+      title: json['title'],
+      description: json['description'],
+      videoUrl: json['videoUrl'],
+    );
+  }
 }
