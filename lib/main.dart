@@ -1,55 +1,53 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       title: 'Short Video Reels',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
       home: MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
+  const MyHomePage({Key? key}) : super(key: key);
+
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _currentIndex = 0;
-  final _videoController = VideoPlayerController.asset(
-    'assets/video.mp4',
-  )..initialize().then((_) {
-    setState(() {});
-  });
+  final _videoPlayerController = VideoPlayerController.asset(
+    'assets/video.mp4', // replace with your video asset
+  );
+  final _pageController = PageController();
+  final _currentIndex = 0;
   bool _isLiked = false;
-  final List<Video> _videos = [
-    Video(
-      'https://picsum.photos/200/300',
-      'Creator Name',
-      'This is a sample caption',
-      'Music Title',
-    ),
-    Video(
-      'https://picsum.photos/200/301',
-      'Creator Name 2',
-      'This is another sample caption',
-      'Music Title 2',
-    ),
+  final List<String> _videos = [
+    'assets/video1.mp4', // replace with your video assets
+    'assets/video2.mp4',
+    'assets/video3.mp4',
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _videoPlayerController.initialize().then((_) {
+      setState(() {});
+    });
+  }
+
+  @override
   void dispose() {
-    _videoController.dispose();
+    _videoPlayerController.dispose();
     super.dispose();
   }
 
@@ -57,45 +55,32 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: PageView.builder(
+        controller: _pageController,
         scrollDirection: Axis.vertical,
         itemCount: _videos.length,
         itemBuilder: (context, index) {
           return Stack(
             children: [
-              VideoPlayer(_videoController),
+              VideoPlayer(_videoPlayerController),
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Container(
                   height: 100,
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black54,
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            _videos[index].creatorName,
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
+                      Text(
+                        'Creator Name',
+                        style: const TextStyle(color: Colors.white),
                       ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            _videos[index].caption,
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
+                      Text(
+                        'Caption',
+                        style: const TextStyle(color: Colors.white),
                       ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            _videos[index].musicTitle,
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
+                      Text(
+                        'Music Title',
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ],
                   ),
@@ -103,51 +88,45 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               Align(
                 alignment: Alignment.topRight,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: IconButton(
-                    icon: Icon(Icons.person),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => ProfilePage()),
-                      );
-                    },
-                  ),
+                child: IconButton(
+                  icon: const Icon(Icons.person),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ProfilePage()),
+                    );
+                  },
                 ),
               ),
               Align(
                 alignment: Alignment.bottomLeft,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          Icons.favorite,
-                          color: _isLiked ? Colors.red : Colors.white,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _isLiked = !_isLiked;
-                          });
-                        },
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        Icons.favorite,
+                        color: _isLiked ? Colors.red : Colors.white,
                       ),
-                      IconButton(
-                        icon: Icon(Icons.comment),
-                        onPressed: () {
-                          showModalBottomSheet(
-                            context: context,
-                            builder: (context) => CommentSheet(),
-                          );
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.share),
-                        onPressed: () {},
-                      ),
-                    ],
-                  ),
+                      onPressed: () {
+                        setState(() {
+                          _isLiked = !_isLiked;
+                        });
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.comment),
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          builder: (context) => const CommentSheet(),
+                        );
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.share),
+                      onPressed: () {},
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -155,55 +134,31 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       ),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Search',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.upload),
-            label: 'Upload',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.inbox),
-            label: 'Inbox',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+          BottomNavigationBarItem(icon: Icon(Icons.upload), label: 'Upload'),
+          BottomNavigationBarItem(icon: Icon(Icons.inbox), label: 'Inbox'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );
   }
 }
 
-class Video {
-  final String imageUrl;
-  final String creatorName;
-  final String caption;
-  final String musicTitle;
-
-  Video(this.imageUrl, this.creatorName, this.caption, this.musicTitle);
-}
-
 class ProfilePage extends StatelessWidget {
+  const ProfilePage({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Profile'),
-      ),
+    return const Scaffold(
       body: Center(
         child: Text('Profile Page'),
       ),
@@ -212,11 +167,14 @@ class ProfilePage extends StatelessWidget {
 }
 
 class CommentSheet extends StatelessWidget {
+  const CommentSheet({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 200,
-      child: Center(
+      color: Colors.white,
+      child: const Center(
         child: Text('Comment Sheet'),
       ),
     );
