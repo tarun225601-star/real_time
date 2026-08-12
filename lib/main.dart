@@ -1,12 +1,6 @@
-{"fixedCode": "import 'dart:convert';
-import 'dart:io';
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
-import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart';
 
 void main() {
   runApp(MyApp());
@@ -16,213 +10,215 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Social Media App',
+      title: 'Short Video Reels',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: ProfileScreen(),
+      home: MyHomePage(),
     );
   }
 }
 
-class ProfileScreen extends StatefulWidget {
+class MyHomePage extends StatefulWidget {
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
+  _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
-  final _usernameController = TextEditingController();
-  final _bioController = TextEditingController();
-  File? _profilePicture;
-  String? _username;
-  String? _bio;
+class _MyHomePageState extends State<MyHomePage> {
+  int _currentIndex = 0;
+  final _videoController = VideoPlayerController.asset(
+    'assets/video.mp4',
+  )..initialize().then((_) {
+    setState(() {});
+  });
+  bool _isLiked = false;
+  final List<Video> _videos = [
+    Video(
+      'https://picsum.photos/200/300',
+      'Creator Name',
+      'This is a sample caption',
+      'Music Title',
+    ),
+    Video(
+      'https://picsum.photos/200/301',
+      'Creator Name 2',
+      'This is another sample caption',
+      'Music Title 2',
+    ),
+  ];
 
-  Future<void> _createProfile() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('username', _usernameController.text);
-    await prefs.setString('bio', _bioController.text);
-    if (_profilePicture != null) {
-      await prefs.setString('profilePicture', _profilePicture!.path);
-    }
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => FeedScreen()),
-    );
-  }
-
-  Future<void> _pickProfilePicture() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _profilePicture = File(pickedFile.path);
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Create Profile'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _usernameController,
-              decoration: InputDecoration(
-                labelText: 'Username',
-              ),
-            ),
-            TextField(
-              controller: _bioController,
-              decoration: InputDecoration(
-                labelText: 'Bio',
-              ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _pickProfilePicture,
-              child: Text('Pick Profile Picture'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _createProfile,
-              child: Text('Create Profile'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class FeedScreen extends StatefulWidget {
-  @override
-  _FeedScreenState createState() => _FeedScreenState();
-}
-
-class _FeedScreenState extends State<FeedScreen> {
-  List<XFile?> _mediaFiles = [];
-  List<String> _songTitles = [];
-  List<int> _likeCounters = [];
-  List<String> _comments = [];
-  List<bool> _followButtons = [];
-
-  Future<void> _pickMedia() async {
-    final picker = ImagePicker();
-    final pickedFiles = await picker.pickMultiImage();
-    if (pickedFiles != null) {
-      setState(() {
-        _mediaFiles.addAll(pickedFiles);
-        _songTitles.addAll(List.generate(pickedFiles.length, (index) => ''));
-        _likeCounters.addAll(List.generate(pickedFiles.length, (index) => 0));
-        _comments.addAll(List.generate(pickedFiles.length, (index) => ''));
-        _followButtons.addAll(List.generate(pickedFiles.length, (index) => false));
-      });
-    }
-  }
-
-  Future<void> _playVideo(XFile? file) async {
-    if (file != null) {
-      final videoPlayerController = VideoPlayerController.file(File(file.path));
-      await videoPlayerController.initialize();
-      await videoPlayerController.play();
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => VideoPlayerScreen(videoPlayerController),
-        ),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Feed'),
-      ),
-      body: _mediaFiles.isEmpty
-          ? Center(
-              child: Text('No media files'),
-            )
-          : PageView.builder(
-              itemCount: _mediaFiles.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: _mediaFiles[index] != null
-                            ? Image.file(File(_mediaFiles[index]!.path))
-                            : Container(),
-                      ),
-                      SizedBox(height: 20),
-                      Text(_songTitles[index]),
-                      SizedBox(height: 10),
-                      Text('Likes: ${_likeCounters[index]}'),
-                      SizedBox(height: 10),
-                      Text(_comments[index]),
-                      SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: () {
-                          // Follow button logic
-                        },
-                        child: Text(_followButtons[index] ? 'Unfollow' : 'Follow'),
-                      ),
-                      SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: () {
-                          if (_mediaFiles[index]!.path.endsWith('.mp4')) {
-                            _playVideo(_mediaFiles[index]);
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Only videos can be played')),
-                            );
-                          }
-                        },
-                        child: Text('Play Video'),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _pickMedia,
-        tooltip: 'Pick Media',
-        child: Icon(Icons.add),
-      ),
-    );
-  }
-}
-
-class VideoPlayerScreen extends StatefulWidget {
-  final VideoPlayerController _videoPlayerController;
-
-  VideoPlayerScreen(this._videoPlayerController);
-
-  @override
-  _VideoPlayerScreenState createState() => _VideoPlayerScreenState();
-}
-
-class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   @override
   void dispose() {
-    widget._videoPlayerController.dispose();
+    _videoController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: VideoPlayer(widget._videoPlayerController),
+      body: PageView.builder(
+        scrollDirection: Axis.vertical,
+        itemCount: _videos.length,
+        itemBuilder: (context, index) {
+          return Stack(
+            children: [
+              VideoPlayer(_videoController),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  height: 100,
+                  color: Colors.black.withOpacity(0.5),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            _videos[index].creatorName,
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            _videos[index].caption,
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            _videos[index].musicTitle,
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: IconButton(
+                    icon: Icon(Icons.person),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => ProfilePage()),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomLeft,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          Icons.favorite,
+                          color: _isLiked ? Colors.red : Colors.white,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isLiked = !_isLiked;
+                          });
+                        },
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.comment),
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (context) => CommentSheet(),
+                          );
+                        },
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.share),
+                        onPressed: () {},
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: 'Search',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.upload),
+            label: 'Upload',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.inbox),
+            label: 'Inbox',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
       ),
     );
   }
-}"}
+}
+
+class Video {
+  final String imageUrl;
+  final String creatorName;
+  final String caption;
+  final String musicTitle;
+
+  Video(this.imageUrl, this.creatorName, this.caption, this.musicTitle);
+}
+
+class ProfilePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Profile'),
+      ),
+      body: Center(
+        child: Text('Profile Page'),
+      ),
+    );
+  }
+}
+
+class CommentSheet extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 200,
+      child: Center(
+        child: Text('Comment Sheet'),
+      ),
+    );
+  }
+}
