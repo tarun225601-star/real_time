@@ -1,2 +1,1 @@
-#include "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
-#include "../../flutter/ios/Release.xcconfig"
+FLUTTER_FRAMEWORK_DIR = ../../flutter/bin/cache/artifacts/engine/ios
