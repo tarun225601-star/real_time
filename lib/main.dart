@@ -47,11 +47,26 @@ class _MyHomePageState extends State<MyHomePage> {
       likeCount: 300,
     ),
   ];
-  final VideoPlayerController _videoController = VideoPlayerController.network(
-    'https://www.w3schools.com/html/mov_bbb.mp4',
-  )..initialize().then((_) {
-    setState(() {});
-  });
+  List<VideoPlayerController> _videoControllers = [];
+  @override
+  void initState() {
+    super.initState();
+    for (var video in _videos) {
+      _videoControllers.add(VideoPlayerController.network(video.videoUrl));
+    }
+    _videoControllers.forEach((controller) {
+      controller.initialize().then((_) {
+        setState(() {});
+      });
+    });
+  }
+  @override
+  void dispose() {
+    _videoControllers.forEach((controller) {
+      controller.dispose();
+    });
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,7 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
         itemBuilder: (context, index) {
           return Stack(
             children: [
-              VideoPlayer(_videoController),
+              VideoPlayer(_videoControllers[index]),
               Positioned(
                 bottom: 0,
                 child: Container(
