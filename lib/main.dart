@@ -47,21 +47,34 @@ class _MyHomePageState extends State<MyHomePage> {
       likeCount: 300,
     ),
   ];
-  final VideoPlayerController _videoController = VideoPlayerController.network(
-    'https://www.w3schools.com/html/mov_bbb.mp4',
-  )..initialize().then((_) {
-    setState(() {});
-  });
+  List<VideoPlayerController> _videoControllers = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _videoControllers = _videos.map((video) => VideoPlayerController.network(video.videoUrl)).toList();
+    _videoControllers.forEach((controller) => controller.initialize().then((_) => setState(() {})));
+  }
+
+  @override
+  void dispose() {
+    _videoControllers.forEach((controller) => controller.dispose());
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: PageView.builder(
         itemCount: _videos.length,
+        onPageChanged: (index) {
+          _videoControllers.forEach((controller) => controller.pause());
+          _videoControllers[index].play();
+        },
         itemBuilder: (context, index) {
           return Stack(
             children: [
-              VideoPlayer(_videoController),
+              VideoPlayer(_videoControllers[index]),
               Positioned(
                 bottom: 0,
                 child: Container(
@@ -84,7 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       Spacer(),
                       IconButton(
-                        icon: Icon(Icons.favorite_border),
+                        icon: Icon(Icons.favorite_border, color: Colors.red),
                         onPressed: () {},
                       ),
                       SizedBox(width: 10),
@@ -94,12 +107,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       SizedBox(width: 10),
                       IconButton(
-                        icon: Icon(Icons.chat_bubble_outline),
+                        icon: Icon(Icons.chat_bubble_outline, color: Colors.blue),
                         onPressed: () {},
                       ),
                       SizedBox(width: 10),
                       IconButton(
-                        icon: Icon(Icons.share),
+                        icon: Icon(Icons.share, color: Colors.pink),
                         onPressed: () {},
                       ),
                     ],
