@@ -25,51 +25,190 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final _videoPlayerController = VideoPlayerController.asset(
+    'assets/video.mp4',
+  );
+  final _videoPlayerController2 = VideoPlayerController.asset(
+    'assets/video2.mp4',
+  );
+  final _videoPlayerController3 = VideoPlayerController.asset(
+    'assets/video3.mp4',
+  );
+  final _videoPlayerController4 = VideoPlayerController.asset(
+    'assets/video4.mp4',
+  );
+  final _videoPlayerController5 = VideoPlayerController.asset(
+    'assets/video5.mp4',
+  );
+  final _videoPlayerController6 = VideoPlayerController.asset(
+    'assets/video6.mp4',
+  );
+  final _videoPlayerController7 = VideoPlayerController.asset(
+    'assets/video7.mp4',
+  );
+  final _videoPlayerController8 = VideoPlayerController.asset(
+    'assets/video8.mp4',
+  );
+  final _videoPlayerController9 = VideoPlayerController.asset(
+    'assets/video9.mp4',
+  );
+  final _videoPlayerController10 = VideoPlayerController.asset(
+    'assets/video10.mp4',
+  );
   int _currentIndex = 0;
-  final List<Video> _videos = [
-    Video(
-      id: 1,
-      videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-      creatorName: 'Creator 1',
-      caption: 'This is a sample video',
-      musicTitle: 'Sample Music',
-    ),
-    Video(
-      id: 2,
-      videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-      creatorName: 'Creator 2',
-      caption: 'This is another sample video',
-      musicTitle: 'Another Sample Music',
-    ),
-    Video(
-      id: 3,
-      videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-      creatorName: 'Creator 3',
-      caption: 'This is yet another sample video',
-      musicTitle: 'Yet Another Sample Music',
-    ),
+  bool _isLiked = false;
+  final List<VideoPlayerController> _controllers = [
+    VideoPlayerController.asset('assets/video.mp4'),
+    VideoPlayerController.asset('assets/video2.mp4'),
+    VideoPlayerController.asset('assets/video3.mp4'),
+    VideoPlayerController.asset('assets/video4.mp4'),
+    VideoPlayerController.asset('assets/video5.mp4'),
+    VideoPlayerController.asset('assets/video6.mp4'),
+    VideoPlayerController.asset('assets/video7.mp4'),
+    VideoPlayerController.asset('assets/video8.mp4'),
+    VideoPlayerController.asset('assets/video9.mp4'),
+    VideoPlayerController.asset('assets/video10.mp4'),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _controllers.forEach((controller) {
+      controller.initialize().then((_) {
+        setState(() {});
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _controllers.forEach((controller) {
+      controller.dispose();
+    });
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: PageView.builder(
         scrollDirection: Axis.vertical,
-        itemCount: _videos.length,
+        itemCount: _controllers.length,
         itemBuilder: (context, index) {
-          return VideoPlayerScreen(
-            video: _videos[index],
+          return Stack(
+            children: [
+              VideoPlayer(_controllers[index]),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  height: 100,
+                  color: Colors.black54,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Creator Name',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              Text(
+                                'Caption',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                'Music Title',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Column(
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              Icons.favorite,
+                              color: _isLiked ? Colors.red : Colors.white,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isLiked = !_isLiked;
+                              });
+                            },
+                          ),
+                          IconButton(
+                            icon: Icon(
+                              Icons.comment,
+                              color: Colors.white,
+                            ),
+                            onPressed: () {
+                              showModalBottomSheet(
+                                context: context,
+                                builder: (context) {
+                                  return Container(
+                                    height: 200,
+                                    child: Center(
+                                      child: Text('Comment Sheet'),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                          IconButton(
+                            icon: Icon(
+                              Icons.share,
+                              color: Colors.white,
+                            ),
+                            onPressed: () {},
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.topRight,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.person,
+                    color: Colors.white,
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ProfilePage()),
+                    );
+                  },
+                ),
+              ),
+            ],
           );
         },
       ),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
-        items: const [
+        items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
@@ -96,166 +235,16 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class VideoPlayerScreen extends StatefulWidget {
-  final Video video;
-
-  const VideoPlayerScreen({Key? key, required this.video}) : super(key: key);
-
-  @override
-  State<VideoPlayerScreen> createState() => _VideoPlayerScreenState();
-}
-
-class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
-  late VideoPlayerController _controller;
-  bool _isLiked = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = VideoPlayerController.network(widget.video.videoUrl)
-      ..initialize().then((_) {
-        setState(() {});
-      });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        _controller.value.isInitialized
-            ? VideoPlayer(_controller)
-            : const Center(child: CircularProgressIndicator()),
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.person),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ProfilePage()),
-                  );
-                },
-              ),
-              const Spacer(),
-              IconButton(
-                icon: Icon(
-                  _isLiked ? Icons.favorite : Icons.favorite_border,
-                  color: _isLiked ? Colors.red : Colors.white,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _isLiked = !_isLiked;
-                  });
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.comment),
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    builder: (context) => const CommentSheet(),
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.share),
-                onPressed: () {},
-              ),
-            ],
-          ),
-        ),
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            color: Colors.black.withOpacity(0.5),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.video.creatorName,
-                  style: const TextStyle(color: Colors.white),
-                ),
-                Text(
-                  widget.video.caption,
-                  style: const TextStyle(color: Colors.white),
-                ),
-                Text(
-                  widget.video.musicTitle,
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Profile Page'),
+      ),
       body: Center(
-        child: Text('Profile Page'),
+        child: Text('This is a mock profile page'),
       ),
     );
   }
-}
-
-class CommentSheet extends StatelessWidget {
-  const CommentSheet({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      child: Column(
-        children: [
-          const TextField(
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: 'Write a comment',
-            ),
-          ),
-          const SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: () {},
-            child: const Text('Post'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class Video {
-  final int id;
-  final String videoUrl;
-  final String creatorName;
-  final String caption;
-  final String musicTitle;
-
-  Video({
-    required this.id,
-    required this.videoUrl,
-    required this.creatorName,
-    required this.caption,
-    required this.musicTitle,
-  });
 }
