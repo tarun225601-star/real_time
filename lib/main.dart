@@ -52,13 +52,16 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _videoControllers = _videos.map((video) => VideoPlayerController.network(video.videoUrl)).toList();
-    _videoControllers.forEach((controller) => controller.initialize().then((_) => setState(() {})));
+    for (var video in _videos) {
+      _videoControllers.add(VideoPlayerController.network(video.videoUrl));
+    }
   }
 
   @override
   void dispose() {
-    _videoControllers.forEach((controller) => controller.dispose());
+    for (var controller in _videoControllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -68,13 +71,18 @@ class _MyHomePageState extends State<MyHomePage> {
       body: PageView.builder(
         itemCount: _videos.length,
         onPageChanged: (index) {
-          _videoControllers.forEach((controller) => controller.pause());
-          _videoControllers[index].play();
+          for (var i = 0; i < _videoControllers.length; i++) {
+            if (i != index) {
+              _videoControllers[i].pause();
+            }
+          }
         },
         itemBuilder: (context, index) {
           return Stack(
             children: [
-              VideoPlayer(_videoControllers[index]),
+              VideoPlayer(_videoControllers[index])..initialize().then((_) {
+                _videoControllers[index].play();
+              }),
               Positioned(
                 bottom: 0,
                 child: Container(
@@ -97,7 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       Spacer(),
                       IconButton(
-                        icon: Icon(Icons.favorite_border, color: Colors.red),
+                        icon: Icon(Icons.favorite_border),
                         onPressed: () {},
                       ),
                       SizedBox(width: 10),
@@ -107,12 +115,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       SizedBox(width: 10),
                       IconButton(
-                        icon: Icon(Icons.chat_bubble_outline, color: Colors.blue),
+                        icon: Icon(Icons.chat_bubble_outline),
                         onPressed: () {},
                       ),
                       SizedBox(width: 10),
                       IconButton(
-                        icon: Icon(Icons.share, color: Colors.pink),
+                        icon: Icon(Icons.share),
                         onPressed: () {},
                       ),
                     ],
