@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:instagram_clone/screens/home_screen.dart';
-import 'package:instagram_clone/utils/constants.dart';
 
 void main() {
   runApp(MyApp());
