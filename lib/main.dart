@@ -25,52 +25,22 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final _videoPlayerController = VideoPlayerController.asset(
-    'assets/video.mp4', // replace with your video asset
-  );
-  final _videoPlayerController2 = VideoPlayerController.asset(
-    'assets/video2.mp4', // replace with your video asset
-  );
-  final _videoPlayerController3 = VideoPlayerController.asset(
-    'assets/video3.mp4', // replace with your video asset
-  );
-  final _videoPlayerController4 = VideoPlayerController.asset(
-    'assets/video4.mp4', // replace with your video asset
-  );
-  final _videoPlayerController5 = VideoPlayerController.asset(
-    'assets/video5.mp4', // replace with your video asset
-  );
   int _currentIndex = 0;
+  final _videoController = VideoPlayerController.asset('assets/video.mp4');
   bool _isLiked = false;
   bool _isCommentSheetOpen = false;
 
   @override
   void initState() {
     super.initState();
-    _videoPlayerController.initialize().then((_) {
-      setState(() {});
-    });
-    _videoPlayerController2.initialize().then((_) {
-      setState(() {});
-    });
-    _videoPlayerController3.initialize().then((_) {
-      setState(() {});
-    });
-    _videoPlayerController4.initialize().then((_) {
-      setState(() {});
-    });
-    _videoPlayerController5.initialize().then((_) {
+    _videoController.initialize().then((_) {
       setState(() {});
     });
   }
 
   @override
   void dispose() {
-    _videoPlayerController.dispose();
-    _videoPlayerController2.dispose();
-    _videoPlayerController3.dispose();
-    _videoPlayerController4.dispose();
-    _videoPlayerController5.dispose();
+    _videoController.dispose();
     super.dispose();
   }
 
@@ -81,24 +51,17 @@ class _MyHomePageState extends State<MyHomePage> {
         children: [
           PageView.builder(
             scrollDirection: Axis.vertical,
-            itemCount: 5,
+            itemCount: 10,
             itemBuilder: (context, index) {
               return Stack(
                 children: [
-                  _videoPlayerController.index == index
-                      ? VideoPlayer(_videoPlayerController)
-                      : _videoPlayerController2.index == index
-                          ? VideoPlayer(_videoPlayerController2)
-                          : _videoPlayerController3.index == index
-                              ? VideoPlayer(_videoPlayerController3)
-                              : _videoPlayerController4.index == index
-                                  ? VideoPlayer(_videoPlayerController4)
-                                  : VideoPlayer(_videoPlayerController5),
+                  VideoPlayer(_videoController),
                   Positioned(
                     bottom: 0,
+                    left: 0,
+                    right: 0,
                     child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(16),
                       decoration: const BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.bottomCenter,
@@ -120,24 +83,11 @@ class _MyHomePageState extends State<MyHomePage> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              'Caption',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              'Music Title',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
+                          Text(
+                            'Music Title',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
                             ),
                           ),
                         ],
@@ -145,8 +95,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                   Positioned(
-                    top: 10,
-                    right: 10,
+                    top: 16,
+                    right: 16,
                     child: CircleAvatar(
                       backgroundColor: Colors.white,
                       child: IconButton(
@@ -154,22 +104,20 @@ class _MyHomePageState extends State<MyHomePage> {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => const ProfilePage(),
-                            ),
+                            MaterialPageRoute(builder: (context) => const ProfilePage()),
                           );
                         },
                       ),
                     ),
                   ),
                   Positioned(
-                    bottom: 10,
-                    right: 10,
+                    bottom: 16,
+                    right: 16,
                     child: Column(
                       children: [
                         IconButton(
                           icon: Icon(
-                            _isLiked ? Icons.favorite : Icons.favorite_border,
+                            Icons.favorite,
                             color: _isLiked ? Colors.red : Colors.white,
                           ),
                           onPressed: () {
@@ -179,10 +127,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           },
                         ),
                         IconButton(
-                          icon: const Icon(
-                            Icons.comment,
-                            color: Colors.white,
-                          ),
+                          icon: const Icon(Icons.comment),
                           onPressed: () {
                             setState(() {
                               _isCommentSheetOpen = true;
@@ -190,10 +135,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           },
                         ),
                         IconButton(
-                          icon: const Icon(
-                            Icons.share,
-                            color: Colors.white,
-                          ),
+                          icon: const Icon(Icons.share),
                           onPressed: () {},
                         ),
                       ],
@@ -203,42 +145,42 @@ class _MyHomePageState extends State<MyHomePage> {
               );
             },
           ),
-          _isCommentSheetOpen
-              ? Positioned(
-                  bottom: 0,
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    height: 200,
-                    padding: const EdgeInsets.all(10),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        topRight: Radius.circular(10),
+          if (_isCommentSheetOpen)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: 'Write a comment',
                       ),
                     ),
-                    child: Column(
-                      children: [
-                        const TextField(
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: 'Write a comment',
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              _isCommentSheetOpen = false;
-                            });
-                          },
-                          child: const Text('Post'),
-                        ),
-                      ],
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _isCommentSheetOpen = false;
+                        });
+                      },
+                      child: const Text('Post'),
                     ),
-                  ),
-                )
-              : const SizedBox(),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
