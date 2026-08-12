@@ -60,9 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
         itemBuilder: (context, index) {
           return Stack(
             children: [
-              VideoPlayer(VideoPlayerController.network(_videos[index].videoUrl)..initialize().then((_) {
-                setState(() {});
-              })),
+              VideoPlayer(_videoController),
               Positioned(
                 bottom: 0,
                 child: Container(
