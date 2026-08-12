@@ -60,7 +60,9 @@ class _MyHomePageState extends State<MyHomePage> {
         itemBuilder: (context, index) {
           return Stack(
             children: [
-              VideoPlayer(_videoController),
+              VideoPlayer(VideoPlayerController.network(_videos[index].videoUrl)..initialize().then((_) {
+                setState(() {});
+              })),
               Positioned(
                 bottom: 0,
                 child: Container(
@@ -83,7 +85,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       Spacer(),
                       IconButton(
-                        icon: Icon(Icons.favorite_border, color: Colors.white),
+                        icon: Icon(Icons.favorite_border),
+                        color: Colors.red,
                         onPressed: () {},
                       ),
                       SizedBox(width: 10),
@@ -93,12 +96,14 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       SizedBox(width: 10),
                       IconButton(
-                        icon: Icon(Icons.chat_bubble_outline, color: Colors.white),
+                        icon: Icon(Icons.chat_bubble_outline),
+                        color: Colors.blue,
                         onPressed: () {},
                       ),
                       SizedBox(width: 10),
                       IconButton(
-                        icon: Icon(Icons.share, color: Colors.white),
+                        icon: Icon(Icons.share),
+                        color: Colors.pink,
                         onPressed: () {},
                       ),
                     ],
