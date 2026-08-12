@@ -6,7 +6,10 @@
     <application
         android:label="real_time"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        <application
+    android:label="real_time"
+    android:name="${applicationName}">
+
         
         <activity
             android:name=".MainActivity"
