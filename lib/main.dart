@@ -10,24 +10,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       title: 'Video Player Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const VideoPage(),
+      home: VideoCardsPage(),
     );
   }
 }
 
-class VideoPage extends StatefulWidget {
-  const VideoPage({Key? key}) : super(key: key);
+class VideoCardsPage extends StatefulWidget {
+  const VideoCardsPage({Key? key}) : super(key: key);
 
   @override
-  State<VideoPage> createState() => _VideoPageState();
+  State<VideoCardsPage> createState() => _VideoCardsPageState();
 }
 
-class _VideoPageState extends State<VideoPage> {
+class _VideoCardsPageState extends State<VideoCardsPage> {
   final List<String> _videoUrls = [
     'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
     'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
@@ -62,10 +59,11 @@ class _VideoCardState extends State<VideoCard> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.network(widget.videoUrl)
-      ..initialize().then((_) {
-        setState(() {});
-      });
+    _controller = VideoPlayerController.network(
+      widget.videoUrl,
+    )..initialize().then((_) {
+      setState(() {});
+    });
   }
 
   @override
@@ -82,7 +80,11 @@ class _VideoCardState extends State<VideoCard> {
               aspectRatio: _controller.value.aspectRatio,
               child: VideoPlayer(_controller),
             )
-          : const CircularProgressIndicator(),
+          : Container(
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
     );
   }
 }
