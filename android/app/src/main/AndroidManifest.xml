@@ -5,11 +5,7 @@
 
     <application
         android:label="real_time"
-        android:name="${applicationName}"
-        <application
-    android:label="real_time"
-    android:name="${applicationName}">
-
+        android:name="${applicationName}">
         
         <activity
             android:name=".MainActivity"
