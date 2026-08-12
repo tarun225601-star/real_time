@@ -47,21 +47,11 @@ class _MyHomePageState extends State<MyHomePage> {
       likeCount: 300,
     ),
   ];
-  late VideoPlayerController _videoController;
-  @override
-  void initState() {
-    super.initState();
-    _videoController = VideoPlayerController.network(
-      'https://www.w3schools.com/html/mov_bbb.mp4',
-    )..initialize().then((_) {
-      setState(() {});
-    });
-  }
-  @override
-  void dispose() {
-    _videoController.dispose();
-    super.dispose();
-  }
+  final VideoPlayerController _videoController = VideoPlayerController.network(
+    'https://www.w3schools.com/html/mov_bbb.mp4',
+  )..initialize().then((_) {
+    setState(() {});
+  });
   @override
   Widget build(BuildContext context) {
     return Scaffold(
