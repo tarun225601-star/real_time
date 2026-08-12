@@ -1,4 +1,4 @@
-import 'dart:convert';
+{"fixedCode": "import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -177,7 +177,13 @@ class _FeedScreenState extends State<FeedScreen> {
                       SizedBox(height: 20),
                       ElevatedButton(
                         onPressed: () {
-                          _playVideo(_mediaFiles[index]);
+                          if (_mediaFiles[index]!.path.endsWith('.mp4')) {
+                            _playVideo(_mediaFiles[index]);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Only videos can be played')),
+                            );
+                          }
                         },
                         child: Text('Play Video'),
                       ),
@@ -219,4 +225,4 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       ),
     );
   }
-}
+}"}
