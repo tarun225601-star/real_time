@@ -117,6 +117,10 @@ class _FeedScreenState extends State<FeedScreen> {
     if (pickedFiles != null) {
       setState(() {
         _mediaFiles.addAll(pickedFiles);
+        _songTitles.addAll(List.generate(pickedFiles.length, (index) => ''));
+        _likeCounters.addAll(List.generate(pickedFiles.length, (index) => 0));
+        _comments.addAll(List.generate(pickedFiles.length, (index) => ''));
+        _followButtons.addAll(List.generate(pickedFiles.length, (index) => false));
       });
     }
   }
@@ -141,43 +145,47 @@ class _FeedScreenState extends State<FeedScreen> {
       appBar: AppBar(
         title: Text('Feed'),
       ),
-      body: PageView.builder(
-        itemCount: _mediaFiles.length,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              children: [
-                Expanded(
-                  child: _mediaFiles[index] != null
-                      ? Image.file(File(_mediaFiles[index]!.path))
-                      : Container(),
-                ),
-                SizedBox(height: 20),
-                Text(_songTitles[index]),
-                SizedBox(height: 10),
-                Text('Likes: ${_likeCounters[index]}'),
-                SizedBox(height: 10),
-                Text(_comments[index]),
-                SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    // Follow button logic
-                  },
-                  child: Text(_followButtons[index] ? 'Unfollow' : 'Follow'),
-                ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    _playVideo(_mediaFiles[index]);
-                  },
-                  child: Text('Play Video'),
-                ),
-              ],
+      body: _mediaFiles.isEmpty
+          ? Center(
+              child: Text('No media files'),
+            )
+          : PageView.builder(
+              itemCount: _mediaFiles.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: _mediaFiles[index] != null
+                            ? Image.file(File(_mediaFiles[index]!.path))
+                            : Container(),
+                      ),
+                      SizedBox(height: 20),
+                      Text(_songTitles[index]),
+                      SizedBox(height: 10),
+                      Text('Likes: ${_likeCounters[index]}'),
+                      SizedBox(height: 10),
+                      Text(_comments[index]),
+                      SizedBox(height: 10),
+                      ElevatedButton(
+                        onPressed: () {
+                          // Follow button logic
+                        },
+                        child: Text(_followButtons[index] ? 'Unfollow' : 'Follow'),
+                      ),
+                      SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () {
+                          _playVideo(_mediaFiles[index]);
+                        },
+                        child: Text('Play Video'),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _pickMedia,
         tooltip: 'Pick Media',
