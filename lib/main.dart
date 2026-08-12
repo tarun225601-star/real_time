@@ -1,43 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:instagram_clone/screens/home_screen.dart';
+import 'package:instagram_clone/utils/constants.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
+void main() {
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'My App',
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF0B132B),
-        primaryColor: const Color(0xFF00F5D4),
+      title: 'Instagram Clone',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Autonomous Enterprise Studio'),
-        backgroundColor: const Color(0xFF1D3557),
-      ),
-      body: const Center(
-        child: Text(
-          'App is running successfully!',
-          style: TextStyle(color: Color(0xFF00F5D4), fontSize: 18),
-        ),
-      ),
+      home: HomeScreen(),
     );
   }
 }
