@@ -80,7 +80,7 @@ class _VideoCardState extends State<VideoCard> {
               aspectRatio: _controller.value.aspectRatio,
               child: VideoPlayer(_controller),
             )
-          : const CircularProgressIndicator(),
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 }
