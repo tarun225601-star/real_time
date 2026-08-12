@@ -1,0 +1,7 @@
+platform :ios, '12.0'
+target 'Runner' do
+  use_frameworks!
+  use_modular_headers!
+
+  pod 'Flutter', :path => '../.symlinks/flutter/ios'
+end
