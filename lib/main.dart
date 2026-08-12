@@ -1,9 +1,12 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:video_player/video_player.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:video_player/video_player.dart';
 import 'package:http/http.dart' as http;
-import 'package:page_view/page_view.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart';
 
 void main() {
   runApp(MyApp());
@@ -13,230 +16,199 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Real Time',
+      title: 'Social Media App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(),
+      home: ProfileScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class ProfileScreen extends StatefulWidget {
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _ProfileScreenState createState() => _ProfileScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  final _picker = ImagePicker();
-  final _videoPlayerController = VideoPlayerController.network(
-    'https://example.com/video.mp4',
-  );
+class _ProfileScreenState extends State<ProfileScreen> {
   final _usernameController = TextEditingController();
   final _bioController = TextEditingController();
-  String _profilePicture = '';
-  List<XFile> _selectedFiles = [];
-  List<Post> _posts = [];
-  bool _isFollowing = false;
+  File? _profilePicture;
+  String? _username;
+  String? _bio;
 
-  Future<void> _createPost() async {
-    final XFile? photo = await _picker.pickImage(source: ImageSource.gallery);
-    final XFile? video = await _picker.pickVideo(source: ImageSource.gallery);
-    if (photo != null || video != null) {
-      setState(() {
-        _selectedFiles.add(photo!);
-        _selectedFiles.add(video!);
-      });
-    }
-  }
-
-  Future<void> _playVideo() async {
-    await _videoPlayerController.initialize();
-    await _videoPlayerController.play();
-  }
-
-  Future<void> _saveProfile() async {
+  Future<void> _createProfile() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('username', _usernameController.text);
     await prefs.setString('bio', _bioController.text);
-    await prefs.setString('profilePicture', _profilePicture);
+    if (_profilePicture != null) {
+      await prefs.setString('profilePicture', _profilePicture!.path);
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => FeedScreen()),
+    );
   }
 
-  Future<void> _loadProfile() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _usernameController.text = prefs.getString('username') ?? '';
-      _bioController.text = prefs.getString('bio') ?? '';
-      _profilePicture = prefs.getString('profilePicture') ?? '';
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadProfile();
+  Future<void> _pickProfilePicture() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _profilePicture = File(pickedFile.path);
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Real Time'),
+        title: Text('Create Profile'),
       ),
-      body: PageView(
-        children: [
-          ProfileScreen(
-            usernameController: _usernameController,
-            bioController: _bioController,
-            profilePicture: _profilePicture,
-            saveProfile: _saveProfile,
-            loadProfile: _loadProfile,
-          ),
-          FeedScreen(
-            posts: _posts,
-            createPost: _createPost,
-            playVideo: _playVideo,
-            isFollowing: _isFollowing,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class ProfileScreen extends StatelessWidget {
-  final TextEditingController _usernameController;
-  final TextEditingController _bioController;
-  final String _profilePicture;
-  final Function _saveProfile;
-  final Function _loadProfile;
-
-  ProfileScreen({
-    required this._usernameController,
-    required this._bioController,
-    required this._profilePicture,
-    required this._saveProfile,
-    required this._loadProfile,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        TextField(
-          controller: _usernameController,
-          decoration: InputDecoration(
-            labelText: 'Username',
-          ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _usernameController,
+              decoration: InputDecoration(
+                labelText: 'Username',
+              ),
+            ),
+            TextField(
+              controller: _bioController,
+              decoration: InputDecoration(
+                labelText: 'Bio',
+              ),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _pickProfilePicture,
+              child: Text('Pick Profile Picture'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _createProfile,
+              child: Text('Create Profile'),
+            ),
+          ],
         ),
-        TextField(
-          controller: _bioController,
-          decoration: InputDecoration(
-            labelText: 'Bio',
-          ),
-        ),
-        ElevatedButton(
-          onPressed: () async {
-            await _saveProfile();
-          },
-          child: Text('Save Profile'),
-        ),
-        ElevatedButton(
-          onPressed: () async {
-            await _loadProfile();
-          },
-          child: Text('Load Profile'),
-        ),
-      ],
-    );
-  }
-}
-
-class FeedScreen extends StatelessWidget {
-  final List<Post> _posts;
-  final Function _createPost;
-  final Function _playVideo;
-  final bool _isFollowing;
-
-  FeedScreen({
-    required this._posts,
-    required this._createPost,
-    required this._playVideo,
-    required this._isFollowing,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: _posts.length,
-      itemBuilder: (context, index) {
-        return PostCard(
-          post: _posts[index],
-          createPost: _createPost,
-          playVideo: _playVideo,
-          isFollowing: _isFollowing,
-        );
-      },
-    );
-  }
-}
-
-class PostCard extends StatelessWidget {
-  final Post _post;
-  final Function _createPost;
-  final Function _playVideo;
-  final bool _isFollowing;
-
-  PostCard({
-    required this._post,
-    required this._createPost,
-    required this._playVideo,
-    required this._isFollowing,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Column(
-        children: [
-          Image.network(_post.mediaUrl),
-          Text(_post.songTitle),
-          Text(_post.likeCounter.toString()),
-          Text(_post.commentsSection),
-          ElevatedButton(
-            onPressed: () async {
-              await _createPost();
-            },
-            child: Text('Create Post'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              await _playVideo();
-            },
-            child: Text('Play Video'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // follow button logic
-            },
-            child: Text(_isFollowing ? 'Unfollow' : 'Follow'),
-          ),
-        ],
       ),
     );
   }
 }
 
-class Post {
-  final String mediaUrl;
-  final String songTitle;
-  final int likeCounter;
-  final String commentsSection;
+class FeedScreen extends StatefulWidget {
+  @override
+  _FeedScreenState createState() => _FeedScreenState();
+}
 
-  Post({
-    required this.mediaUrl,
-    required this.songTitle,
-    required this.likeCounter,
-    required this.commentsSection,
-  });
+class _FeedScreenState extends State<FeedScreen> {
+  List<XFile?> _mediaFiles = [];
+  List<String> _songTitles = [];
+  List<int> _likeCounters = [];
+  List<String> _comments = [];
+  List<bool> _followButtons = [];
+
+  Future<void> _pickMedia() async {
+    final picker = ImagePicker();
+    final pickedFiles = await picker.pickMultiImage();
+    if (pickedFiles != null) {
+      setState(() {
+        _mediaFiles.addAll(pickedFiles);
+      });
+    }
+  }
+
+  Future<void> _playVideo(XFile? file) async {
+    if (file != null) {
+      final videoPlayerController = VideoPlayerController.file(File(file.path));
+      await videoPlayerController.initialize();
+      await videoPlayerController.play();
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => VideoPlayerScreen(videoPlayerController),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Feed'),
+      ),
+      body: PageView.builder(
+        itemCount: _mediaFiles.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                Expanded(
+                  child: _mediaFiles[index] != null
+                      ? Image.file(File(_mediaFiles[index]!.path))
+                      : Container(),
+                ),
+                SizedBox(height: 20),
+                Text(_songTitles[index]),
+                SizedBox(height: 10),
+                Text('Likes: ${_likeCounters[index]}'),
+                SizedBox(height: 10),
+                Text(_comments[index]),
+                SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () {
+                    // Follow button logic
+                  },
+                  child: Text(_followButtons[index] ? 'Unfollow' : 'Follow'),
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    _playVideo(_mediaFiles[index]);
+                  },
+                  child: Text('Play Video'),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _pickMedia,
+        tooltip: 'Pick Media',
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class VideoPlayerScreen extends StatefulWidget {
+  final VideoPlayerController _videoPlayerController;
+
+  VideoPlayerScreen(this._videoPlayerController);
+
+  @override
+  _VideoPlayerScreenState createState() => _VideoPlayerScreenState();
+}
+
+class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
+  @override
+  void dispose() {
+    widget._videoPlayerController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: VideoPlayer(widget._videoPlayerController),
+      ),
+    );
+  }
 }
