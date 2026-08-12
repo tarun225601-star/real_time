@@ -25,128 +25,146 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final _videoPlayerController = VideoPlayerController.asset(
-    'assets/video.mp4', // replace with your video asset
-  );
-  final _pageController = PageController();
-  final _currentIndex = 0;
-  bool _isLiked = false;
-  final List<String> _videos = [
-    'assets/video1.mp4', // replace with your video assets
-    'assets/video2.mp4',
-    'assets/video3.mp4',
+  int _currentIndex = 0;
+  final List<VideoPlayerController> _controllers = [
+    VideoPlayerController.asset('assets/video1.mp4'),
+    VideoPlayerController.asset('assets/video2.mp4'),
+    VideoPlayerController.asset('assets/video3.mp4'),
   ];
+  final List<bool> _liked = [false, false, false];
+  final List<String> _captions = ['Caption 1', 'Caption 2', 'Caption 3'];
+  final List<String> _musicTitles = ['Music 1', 'Music 2', 'Music 3'];
+  final List<String> _creatorNames = ['Creator 1', 'Creator 2', 'Creator 3'];
 
   @override
   void initState() {
     super.initState();
-    _videoPlayerController.initialize().then((_) {
-      setState(() {});
+    _controllers.forEach((controller) {
+      controller.initialize().then((_) {
+        setState(() {});
+      });
     });
   }
 
   @override
   void dispose() {
-    _videoPlayerController.dispose();
+    _controllers.forEach((controller) {
+      controller.dispose();
+    });
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView.builder(
-        controller: _pageController,
-        scrollDirection: Axis.vertical,
-        itemCount: _videos.length,
-        itemBuilder: (context, index) {
-          return Stack(
-            children: [
-              VideoPlayer(_videoPlayerController),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  height: 100,
-                  color: Colors.black54,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Text(
-                        'Creator Name',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      Text(
-                        'Caption',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      Text(
-                        'Music Title',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Align(
-                alignment: Alignment.topRight,
-                child: IconButton(
-                  icon: const Icon(Icons.person),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const ProfilePage()),
-                    );
-                  },
-                ),
-              ),
-              Align(
-                alignment: Alignment.bottomLeft,
-                child: Row(
+      body: Column(
+        children: [
+          Expanded(
+            child: PageView.builder(
+              scrollDirection: Axis.vertical,
+              itemCount: _controllers.length,
+              itemBuilder: (context, index) {
+                return Stack(
                   children: [
-                    IconButton(
-                      icon: Icon(
-                        Icons.favorite,
-                        color: _isLiked ? Colors.red : Colors.white,
+                    VideoPlayer(_controllers[index]),
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [Colors.black, Colors.transparent],
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              _creatorNames[index],
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              _captions[index],
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              _musicTitles[index],
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        ),
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _isLiked = !_isLiked;
-                        });
-                      },
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.comment),
-                      onPressed: () {
-                        showModalBottomSheet(
-                          context: context,
-                          builder: (context) => const CommentSheet(),
-                        );
-                      },
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: IconButton(
+                        icon: const Icon(Icons.person),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const ProfilePage()),
+                          );
+                        },
+                      ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.share),
-                      onPressed: () {},
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              _liked[index] ? Icons.favorite : Icons.favorite_border,
+                              color: _liked[index] ? Colors.red : Colors.white,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _liked[index] = !_liked[index];
+                              });
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.comment, color: Colors.white),
+                            onPressed: () {
+                              showModalBottomSheet(
+                                context: context,
+                                builder: (context) => const CommentSheet(),
+                              );
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.share, color: Colors.white),
+                            onPressed: () {},
+                          ),
+                        ],
+                      ),
                     ),
                   ],
-                ),
-              ),
+                );
+              },
+            ),
+          ),
+          BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+              BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+              BottomNavigationBarItem(icon: Icon(Icons.upload), label: 'Upload'),
+              BottomNavigationBarItem(icon: Icon(Icons.inbox), label: 'Inbox'),
+              BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
             ],
-          );
-        },
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.upload), label: 'Upload'),
-          BottomNavigationBarItem(icon: Icon(Icons.inbox), label: 'Inbox'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          ),
         ],
       ),
     );
@@ -158,9 +176,12 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('Profile Page'),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profile'),
+      ),
+      body: const Center(
+        child: Text('Mock Profile Page'),
       ),
     );
   }
@@ -172,10 +193,23 @@ class CommentSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 200,
-      color: Colors.white,
-      child: const Center(
-        child: Text('Comment Sheet'),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: const [
+          Text('Comments'),
+          SizedBox(height: 16),
+          TextField(
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              hintText: 'Add a comment',
+            ),
+          ),
+          SizedBox(height: 16),
+          Text('Comment 1'),
+          Text('Comment 2'),
+          Text('Comment 3'),
+        ],
       ),
     );
   }
