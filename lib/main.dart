@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:instagram_clone/screens/home_screen.dart';
+import 'package:instagram_clone/utils/constants.dart';
+import 'package:instagram_clone/services/video_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await VideoService.init();
   runApp(MyApp());
 }
 
