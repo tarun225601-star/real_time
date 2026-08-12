@@ -12,19 +12,19 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       title: 'Video Player Demo',
-      home: VideoCardsPage(),
+      home: VideoCardPage(),
     );
   }
 }
 
-class VideoCardsPage extends StatefulWidget {
-  const VideoCardsPage({Key? key}) : super(key: key);
+class VideoCardPage extends StatefulWidget {
+  const VideoCardPage({Key? key}) : super(key: key);
 
   @override
-  State<VideoCardsPage> createState() => _VideoCardsPageState();
+  State<VideoCardPage> createState() => _VideoCardPageState();
 }
 
-class _VideoCardsPageState extends State<VideoCardsPage> {
+class _VideoCardPageState extends State<VideoCardPage> {
   final List<String> _videoUrls = [
     'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
     'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
@@ -80,11 +80,7 @@ class _VideoCardState extends State<VideoCard> {
               aspectRatio: _controller.value.aspectRatio,
               child: VideoPlayer(_controller),
             )
-          : Container(
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 }
