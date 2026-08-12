@@ -26,134 +26,153 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
-  final List<VideoPlayerController> _controllers = [
-    VideoPlayerController.asset('assets/video1.mp4'),
-    VideoPlayerController.asset('assets/video2.mp4'),
-    VideoPlayerController.asset('assets/video3.mp4'),
-  ];
-  final List<bool> _liked = [false, false, false];
-  final List<String> _captions = ['Caption 1', 'Caption 2', 'Caption 3'];
-  final List<String> _musicTitles = ['Music 1', 'Music 2', 'Music 3'];
-  final List<String> _creatorNames = ['Creator 1', 'Creator 2', 'Creator 3'];
+  final _videoController = VideoPlayerController.asset('assets/video.mp4');
+  bool _isLiked = false;
+  bool _isCommentSheetOpen = false;
 
   @override
   void initState() {
     super.initState();
-    _controllers.forEach((controller) {
-      controller.initialize().then((_) {
-        setState(() {});
-      });
+    _videoController.initialize().then((_) {
+      setState(() {});
     });
   }
 
   @override
   void dispose() {
-    _controllers.forEach((controller) {
-      controller.dispose();
-    });
+    _videoController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: PageView.builder(
-              scrollDirection: Axis.vertical,
-              itemCount: _controllers.length,
-              itemBuilder: (context, index) {
-                return Stack(
-                  children: [
-                    VideoPlayer(_controllers[index]),
-                    Positioned(
-                      bottom: 0,
-                      child: Container(
-                        width: MediaQuery.of(context).size.width,
-                        padding: const EdgeInsets.all(10),
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: [Colors.black54, Colors.transparent],
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Text(
-                              _creatorNames[index],
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              _captions[index],
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              _musicTitles[index],
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                          ],
+          PageView.builder(
+            scrollDirection: Axis.vertical,
+            itemCount: 10,
+            itemBuilder: (context, index) {
+              return Stack(
+                children: [
+                  VideoPlayer(_videoController),
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [Colors.black, Colors.transparent],
                         ),
                       ),
-                    ),
-                    Positioned(
-                      top: 10,
-                      right: 10,
-                      child: CircleAvatar(
-                        backgroundColor: Colors.white,
-                        child: IconButton(
-                          icon: const Icon(Icons.person),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const ProfilePage()),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 50,
-                      right: 10,
-                      child: Column(
+                      child: Row(
                         children: [
-                          IconButton(
-                            icon: Icon(
-                              _liked[index] ? Icons.favorite : Icons.favorite_border,
-                              color: _liked[index] ? Colors.red : Colors.white,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _liked[index] = !_liked[index];
-                              });
-                            },
+                          const Text(
+                            'Creator Name',
+                            style: TextStyle(color: Colors.white),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.comment, color: Colors.white),
-                            onPressed: () {
-                              showModalBottomSheet(
-                                context: context,
-                                builder: (context) {
-                                  return const CommentSheet();
-                                },
-                              );
-                            },
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Caption',
+                            style: TextStyle(color: Colors.white),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.share, color: Colors.white),
-                            onPressed: () {},
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Music Title',
+                            style: TextStyle(color: Colors.white),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                );
-              },
-            ),
+                  ),
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: IconButton(
+                      icon: const Icon(Icons.person),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const ProfilePage()),
+                        );
+                      },
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Column(
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            _isLiked ? Icons.favorite : Icons.favorite_border,
+                            color: _isLiked ? Colors.red : Colors.white,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isLiked = !_isLiked;
+                            });
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.comment, color: Colors.white),
+                          onPressed: () {
+                            setState(() {
+                              _isCommentSheetOpen = true;
+                            });
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.share, color: Colors.white),
+                          onPressed: () {},
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
+          if (_isCommentSheetOpen)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const TextField(
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: 'Write a comment',
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _isCommentSheetOpen = false;
+                        });
+                      },
+                      child: const Text('Post'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -181,38 +200,8 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-      ),
       body: const Center(
-        child: Text('Mock Profile Page'),
-      ),
-    );
-  }
-}
-
-class CommentSheet extends StatelessWidget {
-  const CommentSheet({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const TextField(
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: 'Write a comment',
-            ),
-          ),
-          const SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: () {},
-            child: const Text('Post'),
-          ),
-        ],
+        child: Text('Profile Page'),
       ),
     );
   }
