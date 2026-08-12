@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,82 +10,114 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Video Player Demo',
+      title: 'Calculator App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const VideoPage(),
+      home: const CalculatorPage(),
     );
   }
 }
 
-class VideoPage extends StatefulWidget {
-  const VideoPage({Key? key}) : super(key: key);
+class CalculatorPage extends StatefulWidget {
+  const CalculatorPage({Key? key}) : super(key: key);
 
   @override
-  State<VideoPage> createState() => _VideoPageState();
+  State<CalculatorPage> createState() => _CalculatorPageState();
 }
 
-class _VideoPageState extends State<VideoPage> {
-  final List<String> _videoUrls = [
-    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-  ];
+class _CalculatorPageState extends State<CalculatorPage> {
+  String _expression = '';
+  String _result = '';
+
+  void _onPressed(String value) {
+    setState(() {
+      if (value == 'C') {
+        _expression = '';
+        _result = '';
+      } else if (value == '=') {
+        try {
+          _result = _calculate(_expression);
+        } catch (e) {
+          _result = 'Error';
+        }
+      } else {
+        _expression += value;
+      }
+    });
+  }
+
+  String _calculate(String expression) {
+    try {
+      return (Function.apply(eval, [_expression])).toString();
+    } catch (e) {
+      return 'Error';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView.builder(
-        itemCount: _videoUrls.length,
-        itemBuilder: (context, index) {
-          return VideoCard(videoUrl: _videoUrls[index]);
-        },
+      appBar: AppBar(
+        title: const Text('Calculator'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Text(
+                    _expression,
+                    style: const TextStyle(fontSize: 24),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    _result,
+                    style: const TextStyle(fontSize: 48),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: GridView.count(
+              crossAxisCount: 4,
+              childAspectRatio: 1.2,
+              children: [
+                _buildButton('7'),
+                _buildButton('8'),
+                _buildButton('9'),
+                _buildButton('/'),
+                _buildButton('4'),
+                _buildButton('5'),
+                _buildButton('6'),
+                _buildButton('*'),
+                _buildButton('1'),
+                _buildButton('2'),
+                _buildButton('3'),
+                _buildButton('-'),
+                _buildButton('0'),
+                _buildButton('.'),
+                _buildButton('='),
+                _buildButton('C'),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
-}
 
-class VideoCard extends StatefulWidget {
-  final String videoUrl;
-
-  const VideoCard({Key? key, required this.videoUrl}) : super(key: key);
-
-  @override
-  State<VideoCard> createState() => _VideoCardState();
-}
-
-class _VideoCardState extends State<VideoCard> {
-  late VideoPlayerController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = VideoPlayerController.network(widget.videoUrl)
-      ..initialize().then((_) {
-        setState(() {});
-      });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: _controller.value.isInitialized
-          ? AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
-              child: VideoPlayer(_controller),
-            )
-          : Container(
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
+  Widget _buildButton(String value) {
+    return ElevatedButton(
+      onPressed: () => _onPressed(value),
+      child: Text(
+        value,
+        style: const TextStyle(fontSize: 24),
+      ),
     );
   }
 }
