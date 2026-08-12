@@ -47,26 +47,12 @@ class _MyHomePageState extends State<MyHomePage> {
       likeCount: 300,
     ),
   ];
-  List<VideoPlayerController> _videoControllers = [];
-  @override
-  void initState() {
-    super.initState();
-    for (var video in _videos) {
-      _videoControllers.add(VideoPlayerController.network(video.videoUrl));
-    }
-    _videoControllers.forEach((controller) {
-      controller.initialize().then((_) {
-        setState(() {});
-      });
-    });
-  }
-  @override
-  void dispose() {
-    _videoControllers.forEach((controller) {
-      controller.dispose();
-    });
-    super.dispose();
-  }
+  final VideoPlayerController _videoController = VideoPlayerController.network(
+    'https://www.w3schools.com/html/mov_bbb.mp4',
+  )..initialize().then((_) {
+    setState(() {});
+  });
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
         itemBuilder: (context, index) {
           return Stack(
             children: [
-              VideoPlayer(_videoControllers[index]),
+              VideoPlayer(_videoController),
               Positioned(
                 bottom: 0,
                 child: Container(
@@ -99,7 +85,6 @@ class _MyHomePageState extends State<MyHomePage> {
                       Spacer(),
                       IconButton(
                         icon: Icon(Icons.favorite_border),
-                        color: Colors.red,
                         onPressed: () {},
                       ),
                       SizedBox(width: 10),
@@ -110,13 +95,11 @@ class _MyHomePageState extends State<MyHomePage> {
                       SizedBox(width: 10),
                       IconButton(
                         icon: Icon(Icons.chat_bubble_outline),
-                        color: Colors.blue,
                         onPressed: () {},
                       ),
                       SizedBox(width: 10),
                       IconButton(
                         icon: Icon(Icons.share),
-                        color: Colors.pink,
                         onPressed: () {},
                       ),
                     ],
