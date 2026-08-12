@@ -25,145 +25,249 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final _videoPlayerController = VideoPlayerController.asset(
+    'assets/video.mp4', // replace with your video asset
+  );
+  final _videoPlayerController2 = VideoPlayerController.asset(
+    'assets/video2.mp4', // replace with your video asset
+  );
+  final _videoPlayerController3 = VideoPlayerController.asset(
+    'assets/video3.mp4', // replace with your video asset
+  );
+  final _videoPlayerController4 = VideoPlayerController.asset(
+    'assets/video4.mp4', // replace with your video asset
+  );
+  final _videoPlayerController5 = VideoPlayerController.asset(
+    'assets/video5.mp4', // replace with your video asset
+  );
   int _currentIndex = 0;
-  final List<VideoPlayerController> _controllers = [
-    VideoPlayerController.asset('assets/video1.mp4'),
-    VideoPlayerController.asset('assets/video2.mp4'),
-    VideoPlayerController.asset('assets/video3.mp4'),
-  ];
-  final List<bool> _liked = [false, false, false];
-  final List<String> _captions = ['Caption 1', 'Caption 2', 'Caption 3'];
-  final List<String> _musicTitles = ['Music 1', 'Music 2', 'Music 3'];
-  final List<String> _creatorNames = ['Creator 1', 'Creator 2', 'Creator 3'];
+  bool _isLiked = false;
+  bool _isCommentSheetOpen = false;
 
   @override
   void initState() {
     super.initState();
-    _controllers.forEach((controller) {
-      controller.initialize().then((_) {
-        setState(() {});
-      });
+    _videoPlayerController.initialize().then((_) {
+      setState(() {});
+    });
+    _videoPlayerController2.initialize().then((_) {
+      setState(() {});
+    });
+    _videoPlayerController3.initialize().then((_) {
+      setState(() {});
+    });
+    _videoPlayerController4.initialize().then((_) {
+      setState(() {});
+    });
+    _videoPlayerController5.initialize().then((_) {
+      setState(() {});
     });
   }
 
   @override
   void dispose() {
-    _controllers.forEach((controller) {
-      controller.dispose();
-    });
+    _videoPlayerController.dispose();
+    _videoPlayerController2.dispose();
+    _videoPlayerController3.dispose();
+    _videoPlayerController4.dispose();
+    _videoPlayerController5.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: PageView.builder(
-              scrollDirection: Axis.vertical,
-              itemCount: _controllers.length,
-              itemBuilder: (context, index) {
-                return Stack(
-                  children: [
-                    VideoPlayer(_controllers[index]),
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: [Colors.black, Colors.transparent],
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Text(
-                              _creatorNames[index],
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              _captions[index],
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              _musicTitles[index],
-                              style: const TextStyle(color: Colors.white),
-                            ),
+          PageView.builder(
+            scrollDirection: Axis.vertical,
+            itemCount: 5,
+            itemBuilder: (context, index) {
+              return Stack(
+                children: [
+                  _videoPlayerController.index == index
+                      ? VideoPlayer(_videoPlayerController)
+                      : _videoPlayerController2.index == index
+                          ? VideoPlayer(_videoPlayerController2)
+                          : _videoPlayerController3.index == index
+                              ? VideoPlayer(_videoPlayerController3)
+                              : _videoPlayerController4.index == index
+                                  ? VideoPlayer(_videoPlayerController4)
+                                  : VideoPlayer(_videoPlayerController5),
+                  Positioned(
+                    bottom: 0,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      padding: const EdgeInsets.all(10),
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            Colors.black54,
+                            Colors.transparent,
                           ],
                         ),
                       ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Creator Name',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Caption',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Music Title',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    Positioned(
-                      top: 0,
-                      right: 0,
+                  ),
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: CircleAvatar(
+                      backgroundColor: Colors.white,
                       child: IconButton(
                         icon: const Icon(Icons.person),
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const ProfilePage()),
+                            MaterialPageRoute(
+                              builder: (context) => const ProfilePage(),
+                            ),
                           );
                         },
                       ),
                     ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Row(
-                        children: [
-                          IconButton(
-                            icon: Icon(
-                              _liked[index] ? Icons.favorite : Icons.favorite_border,
-                              color: _liked[index] ? Colors.red : Colors.white,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _liked[index] = !_liked[index];
-                              });
-                            },
+                  ),
+                  Positioned(
+                    bottom: 10,
+                    right: 10,
+                    child: Column(
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            _isLiked ? Icons.favorite : Icons.favorite_border,
+                            color: _isLiked ? Colors.red : Colors.white,
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.comment, color: Colors.white),
-                            onPressed: () {
-                              showModalBottomSheet(
-                                context: context,
-                                builder: (context) => const CommentSheet(),
-                              );
-                            },
+                          onPressed: () {
+                            setState(() {
+                              _isLiked = !_isLiked;
+                            });
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.comment,
+                            color: Colors.white,
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.share, color: Colors.white),
-                            onPressed: () {},
+                          onPressed: () {
+                            setState(() {
+                              _isCommentSheetOpen = true;
+                            });
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.share,
+                            color: Colors.white,
                           ),
-                        ],
+                          onPressed: () {},
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+          _isCommentSheetOpen
+              ? Positioned(
+                  bottom: 0,
+                  child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: 200,
+                    padding: const EdgeInsets.all(10),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(10),
+                        topRight: Radius.circular(10),
                       ),
                     ),
-                  ],
-                );
-              },
-            ),
+                    child: Column(
+                      children: [
+                        const TextField(
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: 'Write a comment',
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _isCommentSheetOpen = false;
+                            });
+                          },
+                          child: const Text('Post'),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : const SizedBox(),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
           ),
-          BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-              BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-              BottomNavigationBarItem(icon: Icon(Icons.upload), label: 'Upload'),
-              BottomNavigationBarItem(icon: Icon(Icons.inbox), label: 'Inbox'),
-              BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-            ],
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: 'Search',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.upload),
+            label: 'Upload',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.inbox),
+            label: 'Inbox',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
           ),
         ],
       ),
@@ -181,35 +285,7 @@ class ProfilePage extends StatelessWidget {
         title: const Text('Profile'),
       ),
       body: const Center(
-        child: Text('Mock Profile Page'),
-      ),
-    );
-  }
-}
-
-class CommentSheet extends StatelessWidget {
-  const CommentSheet({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: const [
-          Text('Comments'),
-          SizedBox(height: 16),
-          TextField(
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: 'Add a comment',
-            ),
-          ),
-          SizedBox(height: 16),
-          Text('Comment 1'),
-          Text('Comment 2'),
-          Text('Comment 3'),
-        ],
+        child: Text('Profile Page'),
       ),
     );
   }
