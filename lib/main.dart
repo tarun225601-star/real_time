@@ -1,39 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:marketplace_app/app_theme.dart';
+import 'package:marketplace_app/screens/home_screen.dart';
 
 void main() {
-    runApp(const MyApp());
+  runApp(const MarketplaceApp());
 }
 
-class MyApp extends StatelessWidget {
-    const MyApp({Key? key}) : super(key: key);
+class MarketplaceApp extends StatelessWidget {
+  const MarketplaceApp({Key? key}) : super(key: key);
 
-    @override
-    Widget build(BuildContext context) {
-        return const MaterialApp(
-            title: 'app',
-            home: MyHomePage(),
-        );
-    }
-}
-
-class MyHomePage extends StatelessWidget {
-    const MyHomePage({Key? key}) : super(key: key);
-
-    @override
-    Widget build(BuildContext context) {
-        return Scaffold(
-            appBar: AppBar(
-                title: const Text('app'),
-            ),
-            body: Center(
-                child: ElevatedButton(
-                    onPressed: () {
-                        // Added a simple print statement to handle the button press
-                        print('Button pressed');
-                    },
-                    child: const Text('app'),
-                ),
-            ),
-        );
-    }
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Marketplace App',
+      theme: AppTheme.lightTheme,
+      home: const HomeScreen(),
+    );
+  }
 }
