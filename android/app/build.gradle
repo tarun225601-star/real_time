@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace "com.example.real_time"
+    namespace "com.tarun.real_time"
     compileSdkVersion flutter.compileSdkVersion
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
