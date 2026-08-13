@@ -1,23 +1,28 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+}
 
 android {
-    compileSdkVersion 33
-    ndkVersion "21.4.7075529"
+    namespace "com.example.real_time"
+    compileSdkVersion flutter.compileSdkVersion
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
     defaultConfig {
-        applicationId "com.example.app"
-        minSdkVersion 21
-        targetSdkVersion 33
+        applicationId "com.example.real_time"
+        minSdkVersion flutter.minSdkVersion
+        targetSdkVersion flutter.targetSdkVersion
         versionCode 1
-        versionName "1.0"
-        multiDexEnabled true
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        signingConfig signingConfigs.debug
+        versionName "1.0.0"
     }
-    buildTypes {
-        release {
-            signingConfig signingConfigs.debug
-        }
-    }
+}
+
+flutter {
+    source = "../.."
 }
