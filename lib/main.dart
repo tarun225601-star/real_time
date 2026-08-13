@@ -12,8 +12,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'VibeTok',
       theme: ThemeData(
-        primaryColor: const Color(0xFF0B132B),
-        accentColor: const Color(0xFF00F5D4),
+        primarySwatch: Colors.blue,
         scaffoldBackgroundColor: const Color(0xFF0B132B),
       ),
       home: const MyHomePage(),
@@ -146,63 +145,66 @@ class UserProfile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          const SizedBox(height: 16),
-          // User avatar
-          Container(
-            width: 100,
-            height: 100,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.grey,
-            ),
-            child: const Center(
-              child: Text(
-                'Avatar',
-                style: TextStyle(
-                  fontSize: 24,
-                  color: Colors.white,
+      body: Container(
+        color: const Color(0xFF0B132B),
+        child: Column(
+          children: [
+            const SizedBox(height: 16),
+            // User avatar
+            Container(
+              width: 100,
+              height: 100,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.grey,
+              ),
+              child: const Center(
+                child: Text(
+                  'Avatar',
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          // User name
-          const Text(
-            'User Name',
-            style: TextStyle(
-              fontSize: 24,
-              color: Colors.white,
+            const SizedBox(height: 16),
+            // User name
+            const Text(
+              'User Name',
+              style: TextStyle(
+                fontSize: 24,
+                color: Colors.white,
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          // Photo/video thumbnails
-          Expanded(
-            child: GridView.count(
-              crossAxisCount: 3,
-              childAspectRatio: 1,
-              children: List.generate(
-                12,
-                (index) => Container(
-                  margin: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: Colors.grey,
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'Thumbnail',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
+            const SizedBox(height: 16),
+            // Photo/video thumbnails
+            Expanded(
+              child: GridView.count(
+                crossAxisCount: 3,
+                childAspectRatio: 1,
+                children: List.generate(
+                  12,
+                  (index) => Container(
+                    margin: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.grey,
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Thumbnail',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
