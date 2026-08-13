@@ -27,7 +27,10 @@ class MyHomePage extends StatelessWidget {
             ),
             body: Center(
                 child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                        // Added a simple print statement to handle the button press
+                        print('Button pressed');
+                    },
                     child: const Text('app'),
                 ),
             ),
