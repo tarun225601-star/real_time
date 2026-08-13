@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:marketplace_app/app_theme.dart';
-import 'package:marketplace_app/screens/home_screen.dart';
+import 'package:real_time/app_theme.dart';
+import 'package:real_time/screens/home_screen.dart';
 
 void main() {
   runApp(const MarketplaceApp());
