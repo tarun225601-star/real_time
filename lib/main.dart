@@ -16,6 +16,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF0B132B),
       ),
       home: const MyHomePage(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -40,6 +41,9 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: _children[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: const Color(0xFF0B132B),
+        selectedItemColor: const Color(0xFF00F5D4),
+        unselectedItemColor: Colors.white54,
         type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,
         onTap: (index) {
@@ -83,6 +87,7 @@ class _VideoFeedState extends State<VideoFeed> {
   Widget build(BuildContext context) {
     return PageView.builder(
       controller: _pageController,
+      scrollDirection: Axis.vertical,
       onPageChanged: (page) {
         setState(() {
           _currentPage = page;
@@ -92,32 +97,30 @@ class _VideoFeedState extends State<VideoFeed> {
       itemBuilder: (context, index) {
         return Stack(
           children: [
-            // Video player placeholder
             Container(
               width: double.infinity,
               height: double.infinity,
-              color: Colors.grey,
-              child: const Center(
+              color: Colors.black87,
+              child: Center(
                 child: Text(
-                  'Video Player',
-                  style: TextStyle(
+                  'Video Player $index',
+                  style: const TextStyle(
                     fontSize: 24,
                     color: Colors.white,
                   ),
                 ),
               ),
             ),
-            // Interaction layer
             Positioned(
-              right: 0,
-              top: 0,
+              right: 16,
+              bottom: 80,
               child: Column(
                 children: [
-                  const SizedBox(height: 16),
                   IconButton(
                     icon: const Icon(
-                      Icons.favorite_border,
+                      Icons.favorite,
                       color: Color(0xFF00F5D4),
+                      size: 32,
                     ),
                     onPressed: () {},
                   ),
@@ -126,6 +129,7 @@ class _VideoFeedState extends State<VideoFeed> {
                     icon: const Icon(
                       Icons.person,
                       color: Color(0xFF00F5D4),
+                      size: 32,
                     ),
                     onPressed: () {},
                   ),
@@ -144,13 +148,13 @@ class UserProfile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        color: const Color(0xFF0B132B),
+    // यहाँ से extra Scaffold हटा दिया गया है ताकि क्रैश न हो
+    return Container(
+      color: const Color(0xFF0B132B),
+      child: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 16),
-            // User avatar
+            const SizedBox(height: 24),
             Container(
               width: 100,
               height: 100,
@@ -162,40 +166,42 @@ class UserProfile extends StatelessWidget {
                 child: Text(
                   'Avatar',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 20,
                     color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ),
             const SizedBox(height: 16),
-            // User name
             const Text(
-              'User Name',
+              'Tarun User',
               style: TextStyle(
                 fontSize: 24,
                 color: Colors.white,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 16),
-            // Photo/video thumbnails
+            const SizedBox(height: 24),
             Expanded(
               child: GridView.count(
                 crossAxisCount: 3,
                 childAspectRatio: 1,
+                mainAxisSpacing: 4,
+                crossAxisSpacing: 4,
                 children: List.generate(
                   12,
                   (index) => Container(
-                    margin: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.grey,
+                    decoration: BoxDecoration(
+                      color: Colors.white12,
+                      borderRadius: BorderRadius.circular(4),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
-                        'Thumbnail',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.white,
+                        'Post $index',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.white70,
                         ),
                       ),
                     ),
