@@ -26,7 +26,7 @@ class MyHomePage extends StatelessWidget {
                 title: const Text('app'),
             ),
             body: Center(
-                child: Text('app'),
+                child: const Text('app'), // Added const keyword here
             ),
         );
     }
