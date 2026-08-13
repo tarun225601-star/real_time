@@ -26,7 +26,10 @@ class MyHomePage extends StatelessWidget {
                 title: const Text('app'),
             ),
             body: Center(
-                child: const Text('app'), // Added const keyword here
+                child: ElevatedButton(
+                    onPressed: () {},
+                    child: const Text('app'),
+                ),
             ),
         );
     }
