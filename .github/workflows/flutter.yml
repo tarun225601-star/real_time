@@ -13,9 +13,9 @@ jobs:
         with:
           flutter-version: '3.19.x'
       - run: flutter pub get
-      - run: flutter build apk --debug
+      - run: flutter build apk --release
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
