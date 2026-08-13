@@ -39,7 +39,13 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _children[_currentIndex],
+      // यहाँ SafeArea और Expanded लगाने से लेआउट कभी क्रैश नहीं होगा
+      body: SafeArea(
+        child: IndexedStack(
+          index: _currentIndex,
+          children: _children,
+        ),
+      ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: const Color(0xFF0B132B),
         selectedItemColor: const Color(0xFF00F5D4),
@@ -85,60 +91,63 @@ class _VideoFeedState extends State<VideoFeed> {
 
   @override
   Widget build(BuildContext context) {
-    return PageView.builder(
-      controller: _pageController,
-      scrollDirection: Axis.vertical,
-      onPageChanged: (page) {
-        setState(() {
-          _currentPage = page;
-        });
-      },
-      itemCount: 10,
-      itemBuilder: (context, index) {
-        return Stack(
-          children: [
-            Container(
-              width: double.infinity,
-              height: double.infinity,
-              color: Colors.black87,
-              child: Center(
-                child: Text(
-                  'Video Player $index',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    color: Colors.white,
+    // SizedBox.expand देने से PageView को पूरी स्क्रीन की सही हाइट मिल जाएगी और क्रैश नहीं होगा
+    return SizedBox.expand(
+      child: PageView.builder(
+        controller: _pageController,
+        scrollDirection: Axis.vertical,
+        onPageChanged: (page) {
+          setState(() {
+            _currentPage = page;
+          });
+        },
+        itemCount: 10,
+        itemBuilder: (context, index) {
+          return Stack(
+            children: [
+              Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: Colors.black87,
+                child: Center(
+                  child: Text(
+                    'Video Player $index',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
-            ),
-            Positioned(
-              right: 16,
-              bottom: 80,
-              child: Column(
-                children: [
-                  IconButton(
-                    icon: const Icon(
-                      Icons.favorite,
-                      color: Color(0xFF00F5D4),
-                      size: 32,
+              Positioned(
+                right: 16,
+                bottom: 80,
+                child: Column(
+                  children: [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.favorite,
+                        color: Color(0xFF00F5D4),
+                        size: 32,
+                      ),
+                      onPressed: () {},
                     ),
-                    onPressed: () {},
-                  ),
-                  const SizedBox(height: 16),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.person,
-                      color: Color(0xFF00F5D4),
-                      size: 32,
+                    const SizedBox(height: 16),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.person,
+                        color: Color(0xFF00F5D4),
+                        size: 32,
+                      ),
+                      onPressed: () {},
                     ),
-                    onPressed: () {},
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
-        );
-      },
+            ],
+          );
+        },
+      ),
     );
   }
 }
@@ -148,7 +157,6 @@ class UserProfile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // यहाँ से extra Scaffold हटा दिया गया है ताकि क्रैश न हो
     return Container(
       color: const Color(0xFF0B132B),
       child: SafeArea(
