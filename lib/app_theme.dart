@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static final lightTheme = ThemeData(
-    primaryColor: const Color(0xFF2196F3),
-    scaffoldBackgroundColor: const Color(0xFFFFFFFF),
+  static final ThemeData lightTheme = ThemeData(
+    primarySwatch: Colors.blue,
+    scaffoldBackgroundColor: Colors.white,
     appBarTheme: const AppBarTheme(
-      backgroundColor: Color(0xFF2196F3),
-      foregroundColor: Color(0xFFFFFFFF),
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.black,
     ),
   );
 }
