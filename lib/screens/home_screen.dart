@@ -1,46 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:instagram_clone/widgets/video_player_widget.dart';
-import 'package:instagram_clone/models/video_model.dart';
-import 'package:instagram_clone/services/video_service.dart';
+import 'package:marketplace_app/models/product.dart';
 
-class HomeScreen extends StatefulWidget {
-  @override
-  _HomeScreenState createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  List<VideoModel> _videos = [];
-  final VideoService _videoService = VideoService();
-
-  @override
-  void initState() {
-    super.initState();
-    _loadVideos();
-  }
-
-  _loadVideos() async {
-    final videos = await _videoService.getVideos();
-    setState(() {
-      _videos = videos;
-    });
-  }
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Instagram Clone'),
+        title: const Text('Marketplace App'),
       ),
-      body: _videos.isEmpty
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
-          : ListView.builder(
-              itemCount: _videos.length,
-              itemBuilder: (context, index) {
-                return VideoPlayerWidget(video: _videos[index]);
-              },
+      body: ListView.builder(
+        itemCount: 10,
+        itemBuilder: (context, index) {
+          return Card(
+            child: ListTile(
+              title: Text('Product $index'),
+              subtitle: const Text('Description'),
+              leading: const CircleAvatar(
+                backgroundImage: NetworkImage('https://via.placeholder.com/150'),
+              ),
             ),
+          );
+        },
+      ),
     );
   }
 }
