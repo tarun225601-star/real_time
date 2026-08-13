@@ -18,4 +18,5 @@ jobs:
           name: release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
           
-      - run: flutter build apk --release --split-per-abi
+            - run: flutter build apk --debug
+
