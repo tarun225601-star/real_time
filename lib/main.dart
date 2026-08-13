@@ -308,10 +308,11 @@ class ExploreScreen extends StatelessWidget {
       body: GridView.count(
         crossAxisCount: 2,
         childAspectRatio: 1,
-        children: const [
-          TrendingHashtag(),
-          PopularVideo(),
-          SearchBar(),
+        children: [
+          const TrendingHashtag(),
+          const PopularVideo(),
+          const SearchBar(),
+          const SizedBox(), // Added this line
         ],
       ),
     );
@@ -391,8 +392,9 @@ class ProfileScreen extends StatelessWidget {
             child: GridView.count(
               crossAxisCount: 2,
               childAspectRatio: 1,
-              children: const [
-                UserVideo(),
+              children: [
+                const UserVideo(),
+                const SizedBox(), // Added this line
               ],
             ),
           ),
