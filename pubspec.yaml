@@ -1,5 +1,5 @@
 name: real_time
-description: An autonomous enterprise Flutter application.
+description: A smart-scale Flutter application with API key settings.
 publish_to: 'none'
 version: 1.0.0+1
 
