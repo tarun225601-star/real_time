@@ -1,106 +1,63 @@
-import 'package:real_time/controllers/calculator_controller.dart';
-import 'package:real_time/models/calculator_model.dart';
 import 'package:flutter/material.dart';
+import 'package:package_name/controllers/calculator_controller.dart'; // अपने प्रोजेक्ट का नाम डालें
 
 class CalculatorView extends StatefulWidget {
-  const CalculatorView({Key? key}) : super(key: key);
+  const CalculatorView({super.key});
 
   @override
   State<CalculatorView> createState() => _CalculatorViewState();
 }
 
 class _CalculatorViewState extends State<CalculatorView> {
-  final CalculatorController _calculatorController = CalculatorController();
-  final CalculatorModel _calculatorModel = CalculatorModelImpl(CalculatorController());
-  String _expression = '';
-  String _result = '';
+  // यहाँ एब्स्ट्रैक्ट क्लास की जगह सही इम्प्लीमेंटेशन क्लास का उपयोग किया गया है
+  final CalculatorControllerImpl _controller = CalculatorControllerImpl();
 
-  void _onButtonTap(String value) {
-    setState(() {
-      if (value == '=') {
-        _result = _calculatorModel.calculate(_expression);
-        _expression = '';
-      } else if (value == 'C') {
-        _expression = '';
-        _result = '';
-      } else {
-        _expression += value;
-      }
-    });
-  }
+  final List<String> buttons = [
+    '7', '8', '9', '÷',
+    '4', '5', '6', '×',
+    '1', '2', '3', '-',
+    'C', '0', '=', '+'
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text('Calculator App')),
       body: Column(
         children: [
           Expanded(
             child: Container(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Text(
-                    _expression,
-                    style: const TextStyle(fontSize: 24),
-                  ),
-                  Text(
-                    _result,
-                    style: const TextStyle(fontSize: 48),
-                  ),
-                ],
+              alignment: Alignment.bottomRight,
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                _controller.displayText,
+                style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
               ),
             ),
           ),
           Expanded(
             flex: 2,
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              child: GridView.count(
+            child: GridView.builder(
+              itemCount: buttons.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 4,
-                childAspectRatio: 1.2,
-                children: [
-                  _buildButton('7', _onButtonTap),
-                  _buildButton('8', _onButtonTap),
-                  _buildButton('9', _onButtonTap),
-                  _buildButton('/', _onButtonTap),
-                  _buildButton('4', _onButtonTap),
-                  _buildButton('5', _onButtonTap),
-                  _buildButton('6', _onButtonTap),
-                  _buildButton('*', _onButtonTap),
-                  _buildButton('1', _onButtonTap),
-                  _buildButton('2', _onButtonTap),
-                  _buildButton('3', _onButtonTap),
-                  _buildButton('-', _onButtonTap),
-                  _buildButton('0', _onButtonTap),
-                  _buildButton('.', _onButtonTap),
-                  _buildButton('=', _onButtonTap),
-                  _buildButton('+', _onButtonTap),
-                  _buildButton('C', _onButtonTap),
-                ],
               ),
+              itemBuilder: (context, index) {
+                return ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _controller.onButtonPressed(buttons[index]);
+                    });
+                  },
+                  child: Text(
+                    buttons[index],
+                    style: const TextStyle(fontSize: 24),
+                  ),
+                );
+              },
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildButton(String value, Function(String) onPressed) {
-    return GestureDetector(
-      onTap: () => onPressed(value),
-      child: Container(
-        margin: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: const BorderRadius.all(Radius.circular(10)),
-        ),
-        child: Center(
-          child: Text(
-            value,
-            style: const TextStyle(fontSize: 24),
-          ),
-        ),
       ),
     );
   }
