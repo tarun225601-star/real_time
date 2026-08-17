@@ -1,7 +1,8 @@
 // lib/utils/constants.dart
 
+import 'package:flutter/material.dart';
 import 'package:real_time/services/shared_preferences_service.dart';
-import 'package:real_time/services/firebase_service.dart';
+import 'package:real_time/services/firestore_service.dart';
 
 class Constants {
   // App Settings
@@ -41,8 +42,8 @@ class Constants {
   // Success Messages
   static const String apiKeysSavedSuccess = 'API keys saved successfully';
 
-  // Firebase Auth
-  static final FirebaseService _firebaseService = FirebaseService();
+  // Services Helpers (फिक्स: FirebaseService की जगह सही FirestoreService इस्तेमाल किया है)
+  static final FirestoreService _firestoreService = FirestoreService();
   static final SharedPreferencesService _sharedPreferencesService = SharedPreferencesService();
 
   static Future<void> saveApiKeysLocally(String apiKey, String apiSecret) async {
@@ -50,11 +51,11 @@ class Constants {
     await _sharedPreferencesService.setString(sharedPreferencesApiSecretKey, apiSecret);
   }
 
-  static Future<String> getApiKeyLocally() async {
+  static Future<String?> getApiKeyLocally() async {
     return await _sharedPreferencesService.getString(sharedPreferencesApiKeyKey);
   }
 
-  static Future<String> getApiSecretLocally() async {
+  static Future<String?> getApiSecretLocally() async {
     return await _sharedPreferencesService.getString(sharedPreferencesApiSecretKey);
   }
 }
