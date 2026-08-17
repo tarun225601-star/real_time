@@ -1,4 +1,4 @@
-name: Auto-Build Flutter APK
+name: Auto-Fix and Build APK
 
 on:
   push:
@@ -24,15 +24,17 @@ jobs:
           flutter-version: '3.19.x'
           channel: 'stable'
 
-      - name: Auto-Generate Fresh Android/iOS Structure
+      - name: Auto-Configure Project Name and Structure
         run: |
-          echo "Purging old/broken Android and iOS folders..."
+          # pubspec.yaml से अपने आप प्रोजेक्ट का नाम निकाल लेगा
+          PROJECT_NAME=$(grep '^name:' pubspec.yaml | awk '{print $2}' | tr -d '\r')
+          echo "Detected project name: $PROJECT_NAME"
+          
+          # पुरानी टूटी फाइलें हटाकर उसी सही नाम से फ्रेश सेटअप बना देगा
           rm -rf android ios
+          flutter create . --project-name $PROJECT_NAME --platforms=android
           
-          echo "Creating a fresh temporary Flutter structure..."
-          flutter create . --org com.tarun.app --project-name temp_app --platforms=android
-          
-          echo "Fresh Android project generated successfully by GitHub Actions!"
+          echo "Android structure successfully auto-generated for $PROJECT_NAME!"
 
       - name: Install dependencies
         run: flutter pub get
