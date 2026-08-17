@@ -1,124 +1,114 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:real_time/firebase_options.dart';
-import 'package:real_time/screens/marketplace_screen.dart';
-import 'package:real_time/screens/vendor_portal_screen.dart';
-import 'package:real_time/services/api_service.dart';
+import 'package:provider/provider.dart';
+import 'package:real_time/models/vendor.dart';
+import 'package:real_time/services/auth_service.dart';
+import 'package:real_time/services/firestore_service.dart';
 import 'package:real_time/services/shared_preferences_service.dart';
+import 'package:real_time/screens/home_screen.dart';
+import 'package:real_time/screens/login_screen.dart';
+import 'package:real_time/screens/vendor_dashboard_screen.dart';
+import 'package:real_time/providers/vendor_provider.dart';
+import 'package:real_time/providers/product_provider.dart';
+import 'package:real_time/providers/order_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+  await Firebase.initializeApp();
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => VendorProvider()),
+        ChangeNotifierProvider(create: (_) => ProductProvider()),
+        ChangeNotifierProvider(create: (_) => OrderProvider()),
+      ],
+      child: MyApp(),
+    ),
   );
-  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Viziag Mart',
+      title: 'Quick Commerce',
       theme: ThemeData(
-        primarySwatch: Colors.orange,
-        scaffoldBackgroundColor: Colors.white,
+        primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(),
+      home: StreamBuilder(
+        stream: AuthService().authStateChanges,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return VendorDashboardScreen();
+          } else {
+            return LoginScreen();
+          }
+        },
+      ),
+      routes: {
+        '/home': (context) => HomeScreen(),
+        '/login': (context) => LoginScreen(),
+        '/vendor-dashboard': (context) => VendorDashboardScreen(),
+      },
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key}) : super(key: key);
-
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _currentIndex = 0;
-  final _screens = [
-    const MarketplaceScreen(),
-    const VendorPortalScreen(),
-  ];
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
-        title: const Text(
-          'Viziag Mart',
-          style: TextStyle(color: Colors.black),
-        ),
-        backgroundColor: Colors.orange,
+        title: Text('Quick Commerce'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () async {
-              final prefs = await SharedPreferences.getInstance();
-              await showDialog(
+            icon: Icon(Icons.settings),
+            onPressed: () {
+              showDialog(
                 context: context,
                 builder: (context) {
-                  final _apiKeyController = TextEditingController();
-                  return AlertDialog(
-                    title: const Text('Settings'),
-                    content: TextField(
-                      controller: _apiKeyController,
-                      decoration: const InputDecoration(
-                        labelText: 'API Key',
-                        border: OutlineInputBorder(),
+                  return Dialog(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('Save Local API Keys'),
+                          SizedBox(height: 16),
+                          TextField(
+                            decoration: InputDecoration(
+                              labelText: 'API Key',
+                              border: OutlineInputBorder(),
+                            ),
+                            onChanged: (text) {
+                              SharedPreferencesService().saveApiKey(text);
+                            },
+                          ),
+                          SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: Text('Save'),
+                          ),
+                        ],
                       ),
                     ),
-                    actions: [
-                      TextButton(
-                        child: const Text('Cancel'),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                      TextButton(
-                        child: const Text('Save'),
-                        onPressed: () async {
-                          await prefs.setString('api_key', _apiKeyController.text);
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
                   );
                 },
               );
             },
           ),
         ],
-        bottom: const TabBar(
-          tabs: [
-            Tab(text: 'Marketplace'),
-            Tab(text: 'Vendor Portal'),
-          ],
-        ),
       ),
-      body: _screens[_currentIndex],
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // View Cart
-        },
-        child: const Icon(Icons.shopping_cart),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_basket), label: 'Marketplace'),
-          BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Vendor Portal'),
-        ],
-      ),
+      body: HomeScreen(),
     );
   }
 }
