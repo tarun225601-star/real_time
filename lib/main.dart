@@ -1,15 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:real_time/models/vendor.dart';
-import 'package:real_time/services/auth_service.dart';
-import 'package:real_time/services/firestore_service.dart';
-import 'package:real_time/services/shared_preferences_service.dart';
+import 'package:real_time/api_service.dart';
+import 'package:real_time/firestore_service.dart';
+import 'package:real_time/models/order_model.dart';
+import 'package:real_time/models/product_model.dart';
+import 'package:real_time/models/vendor_model.dart';
 import 'package:real_time/screens/home_screen.dart';
 import 'package:real_time/screens/login_screen.dart';
-import 'package:real_time/screens/vendor_dashboard_screen.dart';
-import 'package:real_time/providers/vendor_provider.dart';
-import 'package:real_time/providers/product_provider.dart';
-import 'package:real_time/providers/order_provider.dart';
+import 'package:real_time/screens/vendor_admin_screen.dart';
+import 'package:real_time/services/shared_preferences_service.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,9 +18,8 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => VendorProvider()),
-        ChangeNotifierProvider(create: (_) => ProductProvider()),
-        ChangeNotifierProvider(create: (_) => OrderProvider()),
+        ChangeNotifierProvider(create: (_) => ApiService()),
+        ChangeNotifierProvider(create: (_) => FirestoreService()),
       ],
       child: MyApp(),
     ),
@@ -35,10 +35,10 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: StreamBuilder(
-        stream: AuthService().authStateChanges,
+        stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return VendorDashboardScreen();
+            return VendorAdminScreen();
           } else {
             return LoginScreen();
           }
@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/home': (context) => HomeScreen(),
         '/login': (context) => LoginScreen(),
-        '/vendor-dashboard': (context) => VendorDashboardScreen(),
+        '/vendor-admin': (context) => VendorAdminScreen(),
       },
     );
   }
@@ -59,12 +59,14 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final ApiService _apiService = ApiService();
+  final FirestoreService _firestoreService = FirestoreService();
+  final SharedPreferencesService _sharedPreferencesService =
+      SharedPreferencesService();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
       appBar: AppBar(
         title: Text('Quick Commerce'),
         actions: [
@@ -88,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               border: OutlineInputBorder(),
                             ),
                             onChanged: (text) {
-                              SharedPreferencesService().saveApiKey(text);
+                              _sharedPreferencesService.saveApiKey(text);
                             },
                           ),
                           SizedBox(height: 16),
