@@ -6,11 +6,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # यहाँ ये 2 लाइन जोड़:
-    defaults:
-      run:
-        working-directory: real_time
-
     steps:
       - uses: actions/checkout@v3
       - uses: subosito/flutter-action@v2
