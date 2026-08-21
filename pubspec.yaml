@@ -1,5 +1,5 @@
-name: dev_studio_app
-description: A high-end dark theme developer studio app.
+name: dark_studio_app
+description: A sleek dark theme Flutter app.
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -21,5 +21,234 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  assets:
-    - assets/
+```
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  runApp(DarkStudioApp(prefs: prefs));
+}
+
+class DarkStudioApp extends StatelessWidget {
+  final SharedPreferences prefs;
+
+  const DarkStudioApp({Key? key, required this.prefs}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Dark Studio',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF0B132B),
+        primaryColor: const Color(0xFF00F5D4),
+        colorScheme: ColorScheme.dark(
+          primary: const Color(0xFF00F5D4),
+          secondary: const Color(0xFF00F5D4),
+        ),
+        cardColor: const Color(0xFF1C1F2B),
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(color: Colors.white70),
+          bodyMedium: TextStyle(color: Colors.white70),
+          labelLarge: TextStyle(color: Colors.white),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF00F5D4),
+            foregroundColor: Colors.black,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
+        inputDecorationTheme: const InputDecorationTheme(
+          filled: true,
+          fillColor: Color(0xFF1C1F2B),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+          ),
+          hintStyle: TextStyle(color: Colors.white38),
+          labelStyle: TextStyle(color: Colors.white70),
+        ),
+      ),
+      home: HomePage(prefs: prefs),
+    );
+  }
+}
+
+class HomePage extends StatefulWidget {
+  final SharedPreferences prefs;
+
+  const HomePage({Key? key, required this.prefs}) : super(key: key);
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int _counter = 0;
+  final TextEditingController _urlController =
+      TextEditingController(text: 'https://flutter.dev');
+
+  @override
+  void initState() {
+    super.initState();
+    _counter = widget.prefs.getInt('counter') ?? 0;
+  }
+
+  Future<void> _incrementCounter() async {
+    setState(() {
+      _counter++;
+    });
+    await widget.prefs.setInt('counter', _counter);
+  }
+
+  Future<void> _fetchSampleData() async {
+    final response = await http.get(Uri.parse('https://jsonplaceholder.typicode.com/posts/1'));
+    if (response.statusCode == 200) {
+      final snack = SnackBar(content: Text('Fetched title: ${response.body.substring(0, 30)}...'));
+      ScaffoldMessenger.of(context).showSnackBar(snack);
+    } else {
+      final snack = SnackBar(content: Text('Failed to fetch data'));
+      ScaffoldMessenger.of(context).showSnackBar(snack);
+    }
+  }
+
+  void _openWebView() {
+    final url = _urlController.text.trim();
+    if (url.isNotEmpty) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => WebViewScreen(initialUrl: url)),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Dark Studio'),
+        backgroundColor: const Color(0xFF0B132B),
+        elevation: 0,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Card(
+              elevation: 4,
+              child: ListTile(
+                leading: const Icon(Icons.countertops, color: Color(0xFF00F5D4)),
+                title: Text('Counter: $_counter',
+                    style: const TextStyle(color: Colors.white)),
+                trailing: ElevatedButton(
+                  onPressed: _incrementCounter,
+                  child: const Text('Increment'),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              elevation: 4,
+              child: ListTile(
+                leading: const Icon(Icons.cloud_download,
+                    color: Color(0xFF00F5D4)),
+                title: const Text('Fetch Sample Data',
+                    style: TextStyle(color: Colors.white)),
+                trailing: ElevatedButton(
+                  onPressed: _fetchSampleData,
+                  child: const Text('Fetch'),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: _urlController,
+                      decoration: const InputDecoration(
+                        labelText: 'WebView URL',
+                        hintText: 'Enter a valid URL',
+                      ),
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      onPressed: _openWebView,
+                      child: const Text('Open WebView'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class WebViewScreen extends StatefulWidget {
+  final String initialUrl;
+
+  const WebViewScreen({Key? key, required this.initialUrl}) : super(key: key);
+
+  @override
+  State<WebViewScreen> createState() => _WebViewScreenState();
+}
+
+class _WebViewScreenState extends State<WebViewScreen> {
+  late final WebViewController _controller;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..loadRequest(Uri.parse(widget.initialUrl))
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (_) => setState(() => _isLoading = false),
+        ),
+      );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('WebView'),
+        backgroundColor: const Color(0xFF0B132B),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Color(0xFF00F5D4)),
+            onPressed: () => _controller.reload(),
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          WebViewWidget(controller: _controller),
+          if (_isLoading)
+            const Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFF00F5D4),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
