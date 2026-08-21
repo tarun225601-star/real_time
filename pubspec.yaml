@@ -1,15 +1,15 @@
 name: dark_studio_app
-description: A sleek dark theme Flutter app.
-publish_to: 'none'
+description: A professional dark themed Flutter app.
+publish_to: 'none' # This is a private package.
 version: 1.0.0+1
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: ">=2.19.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.6
+  cupertino_icons: ^1.0.2
   webview_flutter: ^4.7.0
   http: ^1.2.0
   shared_preferences: ^2.2.2
@@ -26,108 +26,107 @@ flutter:
 ```dart
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  final prefs = await SharedPreferences.getInstance();
-  runApp(DarkStudioApp(prefs: prefs));
+void main() {
+  runApp(const DarkStudioApp());
 }
 
 class DarkStudioApp extends StatelessWidget {
-  final SharedPreferences prefs;
+  const DarkStudioApp({Key? key}) : super(key: key);
 
-  const DarkStudioApp({Key? key, required this.prefs}) : super(key: key);
+  static const Color _primaryBackground = Color(0xFF0B132B);
+  static const Color _accentCyan = Color(0xFF00F5D4);
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData base = ThemeData.dark();
     return MaterialApp(
       title: 'Dark Studio',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0B132B),
-        primaryColor: const Color(0xFF00F5D4),
-        colorScheme: ColorScheme.dark(
-          primary: const Color(0xFF00F5D4),
-          secondary: const Color(0xFF00F5D4),
+      theme: base.copyWith(
+        scaffoldBackgroundColor: _primaryBackground,
+        primaryColor: _accentCyan,
+        colorScheme: base.colorScheme.copyWith(
+          primary: _accentCyan,
+          secondary: _accentCyan,
         ),
-        cardColor: const Color(0xFF1C1F2B),
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.white70),
-          bodyMedium: TextStyle(color: Colors.white70),
-          labelLarge: TextStyle(color: Colors.white),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: _primaryBackground,
+          elevation: 0,
+          titleTextStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+          iconTheme: IconThemeData(color: Colors.white),
+        ),
+        cardColor: const Color(0xFF1C2541),
+        textTheme: base.textTheme.apply(
+          bodyColor: Colors.white70,
+          displayColor: Colors.white,
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF00F5D4),
-            foregroundColor: Colors.black,
+            primary: _accentCyan,
+            onPrimary: Colors.black,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
           ),
         ),
-        inputDecorationTheme: const InputDecorationTheme(
-          filled: true,
-          fillColor: Color(0xFF1C1F2B),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(8)),
-          ),
-          hintStyle: TextStyle(color: Colors.white38),
-          labelStyle: TextStyle(color: Colors.white70),
-        ),
       ),
-      home: HomePage(prefs: prefs),
+      home: const HomeScreen(),
     );
   }
 }
 
-class HomePage extends StatefulWidget {
-  final SharedPreferences prefs;
-
-  const HomePage({Key? key, required this.prefs}) : super(key: key);
-
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({Key? key}) : super(key: key);
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomePageState extends State<HomePage> {
-  int _counter = 0;
-  final TextEditingController _urlController =
-      TextEditingController(text: 'https://flutter.dev');
+class _HomeScreenState extends State<HomeScreen> {
+  final List<_WebItem> _items = [
+    _WebItem(title: 'Flutter', url: 'https://flutter.dev'),
+    _WebItem(title: 'Dart', url: 'https://dart.dev'),
+    _WebItem(title: 'GitHub', url: 'https://github.com'),
+  ];
 
   @override
   void initState() {
     super.initState();
-    _counter = widget.prefs.getInt('counter') ?? 0;
+    _loadLastVisited();
   }
 
-  Future<void> _incrementCounter() async {
-    setState(() {
-      _counter++;
-    });
-    await widget.prefs.setInt('counter', _counter);
-  }
-
-  Future<void> _fetchSampleData() async {
-    final response = await http.get(Uri.parse('https://jsonplaceholder.typicode.com/posts/1'));
-    if (response.statusCode == 200) {
-      final snack = SnackBar(content: Text('Fetched title: ${response.body.substring(0, 30)}...'));
-      ScaffoldMessenger.of(context).showSnackBar(snack);
-    } else {
-      final snack = SnackBar(content: Text('Failed to fetch data'));
-      ScaffoldMessenger.of(context).showSnackBar(snack);
-    }
-  }
-
-  void _openWebView() {
-    final url = _urlController.text.trim();
-    if (url.isNotEmpty) {
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => WebViewScreen(initialUrl: url)),
+  Future<void> _loadLastVisited() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastUrl = prefs.getString('last_visited_url');
+    if (lastUrl != null) {
+      // Show a snackbar with quick access
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Last visited: $lastUrl'),
+          action: SnackBarAction(
+            label: 'Open',
+            onPressed: () => _openWebView(lastUrl, 'Last Visited'),
+          ),
+        ),
       );
     }
+  }
+
+  void _openWebView(String url, String title) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('last_visited_url', url);
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => WebViewScreen(url: url, title: title),
+      ),
+    );
   }
 
   @override
@@ -135,106 +134,86 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dark Studio'),
-        backgroundColor: const Color(0xFF0B132B),
-        elevation: 0,
+        centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Card(
-              elevation: 4,
-              child: ListTile(
-                leading: const Icon(Icons.countertops, color: Color(0xFF00F5D4)),
-                title: Text('Counter: $_counter',
-                    style: const TextStyle(color: Colors.white)),
-                trailing: ElevatedButton(
-                  onPressed: _incrementCounter,
-                  child: const Text('Increment'),
-                ),
-              ),
+      body: ListView.builder(
+        padding: const EdgeInsets.all(12),
+        itemCount: _items.length,
+        itemBuilder: (context, index) {
+          final item = _items[index];
+          return Card(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
-            const SizedBox(height: 16),
-            Card(
-              elevation: 4,
-              child: ListTile(
-                leading: const Icon(Icons.cloud_download,
-                    color: Color(0xFF00F5D4)),
-                title: const Text('Fetch Sample Data',
-                    style: TextStyle(color: Colors.white)),
-                trailing: ElevatedButton(
-                  onPressed: _fetchSampleData,
-                  child: const Text('Fetch'),
-                ),
-              ),
+            child: ListTile(
+              title: Text(item.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  )),
+              subtitle: Text(item.url,
+                  style: const TextStyle(color: Colors.white70)),
+              trailing: const Icon(Icons.open_in_browser, color: Colors.white70),
+              onTap: () => _openWebView(item.url, item.title),
             ),
-            const SizedBox(height: 16),
-            Card(
-              elevation: 4,
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  children: [
-                    TextField(
-                      controller: _urlController,
-                      decoration: const InputDecoration(
-                        labelText: 'WebView URL',
-                        hintText: 'Enter a valid URL',
-                      ),
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    const SizedBox(height: 12),
-                    ElevatedButton(
-                      onPressed: _openWebView,
-                      child: const Text('Open WebView'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 }
 
 class WebViewScreen extends StatefulWidget {
-  final String initialUrl;
-
-  const WebViewScreen({Key? key, required this.initialUrl}) : super(key: key);
-
+  final String url;
+  final String title;
+  const WebViewScreen({Key? key, required this.url, required this.title})
+      : super(key: key);
   @override
   State<WebViewScreen> createState() => _WebViewScreenState();
 }
 
 class _WebViewScreenState extends State<WebViewScreen> {
-  late final WebViewController _controller;
   bool _isLoading = true;
+  late final WebViewController _controller;
 
   @override
   void initState() {
     super.initState();
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadRequest(Uri.parse(widget.initialUrl))
+      ..setBackgroundColor(const Color(0x00000000))
       ..setNavigationDelegate(
         NavigationDelegate(
-          onPageFinished: (_) => setState(() => _isLoading = false),
+          onPageFinished: (_) {
+            setState(() => _isLoading = false);
+          },
+          onWebResourceError: (error) {
+            // Simple error handling
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error: ${error.description}')),
+            );
+          },
         ),
-      );
+      )
+      ..loadRequest(Uri.parse(widget.url));
+  }
+
+  Future<void> _refreshPage() async {
+    setState(() => _isLoading = true);
+    await _controller.reload();
   }
 
   @override
   Widget build(BuildContext context) {
+    final accent = Theme.of(context).colorScheme.secondary;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('WebView'),
-        backgroundColor: const Color(0xFF0B132B),
+        title: Text(widget.title),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Color(0xFF00F5D4)),
-            onPressed: () => _controller.reload(),
+            icon: const Icon(Icons.refresh),
+            onPressed: _refreshPage,
           ),
         ],
       ),
@@ -249,6 +228,25 @@ class _WebViewScreenState extends State<WebViewScreen> {
             ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: accent,
+        child: const Icon(Icons.open_in_new),
+        onPressed: () async {
+          // Example of using http to fetch page title (optional)
+          final response = await http.get(Uri.parse(widget.url));
+          if (response.statusCode == 200) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Fetched ${response.body.length} bytes')),
+            );
+          }
+        },
+      ),
     );
   }
+}
+
+class _WebItem {
+  final String title;
+  final String url;
+  const _WebItem({required this.title, required this.url});
 }
