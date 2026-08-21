@@ -1,15 +1,3 @@
-```dart
-// lib/main.dart
-// ------------------------------------------------------------
-// IMPORTANT: Add the following dependencies to your pubspec.yaml
-// ------------------------------------------------------------
-// dependencies:
-//   flutter:
-//     sdk: flutter
-//   firebase_core: ^2.15.0
-//   cloud_firestore: ^4.9.0
-//   url_launcher: ^6.2.0
-// ------------------------------------------------------------
 
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
