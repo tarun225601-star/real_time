@@ -1,5 +1,5 @@
 name: marketplace_app
-description: Multiârole Marketplace with Customer view & Shopkeeper admin panel.
+description: Multi-role Marketplace with Customer view & Shopkeeper admin panel.
 publish_to: "none"
 version: 1.0.0+1
 environment:
