@@ -1,18 +1,19 @@
-name: dark_studio_app
-description: A professional dark themed Flutter app.
-publish_to: 'none' # This is a private package.
+name: marketplace_app
+description: Multiârole Marketplace with Customer view & Shopkeeper admin panel.
+publish_to: "none"
 version: 1.0.0+1
-
 environment:
   sdk: ">=2.19.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.2
-  webview_flutter: ^4.7.0
-  http: ^1.2.0
-  shared_preferences: ^2.2.2
+  firebase_core: ^2.15.0
+  cloud_firestore: ^4.9.0
+  firebase_auth: ^4.7.0
+  provider: ^6.0.5
+  url_launcher: ^6.2.1
+  intl: ^0.18.0
 
 dev_dependencies:
   flutter_test:
@@ -23,230 +24,522 @@ flutter:
   uses-material-design: true
 ```
 
+---
+
+**lib/main.dart**
 ```dart
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
+import 'services/firestore_service.dart';
+import 'models/shop_state.dart';
+import 'screens/customer_home.dart';
+import 'screens/shop_admin.dart';
 
-void main() {
-  runApp(const DarkStudioApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(const MarketplaceApp());
 }
 
-class DarkStudioApp extends StatelessWidget {
-  const DarkStudioApp({Key? key}) : super(key: key);
-
-  static const Color _primaryBackground = Color(0xFF0B132B);
-  static const Color _accentCyan = Color(0xFF00F5D4);
+class MarketplaceApp extends StatelessWidget {
+  const MarketplaceApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData base = ThemeData.dark();
-    return MaterialApp(
-      title: 'Dark Studio',
-      debugShowCheckedModeBanner: false,
-      theme: base.copyWith(
-        scaffoldBackgroundColor: _primaryBackground,
-        primaryColor: _accentCyan,
-        colorScheme: base.colorScheme.copyWith(
-          primary: _accentCyan,
-          secondary: _accentCyan,
+    return MultiProvider(
+      providers: [
+        Provider<FirestoreService>(create: (_) => FirestoreService()),
+        StreamProvider<ShopState?>(
+          create: (context) =>
+              context.read<FirestoreService>().shopStateStream(),
+          initialData: null,
         ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: _primaryBackground,
-          elevation: 0,
-          titleTextStyle: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-          iconTheme: IconThemeData(color: Colors.white),
-        ),
-        cardColor: const Color(0xFF1C2541),
-        textTheme: base.textTheme.apply(
-          bodyColor: Colors.white70,
-          displayColor: Colors.white,
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            primary: _accentCyan,
-            onPrimary: Colors.black,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        ),
+      ],
+      child: MaterialApp(
+        title: 'Marketplace',
+        theme: ThemeData(primarySwatch: Colors.indigo),
+        home: const RoleSwitcher(),
+        debugShowCheckedModeBanner: false,
       ),
-      home: const HomeScreen(),
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+/// Simple role switcher â in production replace with proper auth.
+class RoleSwitcher extends StatefulWidget {
+  const RoleSwitcher({Key? key}) : super(key: key);
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<RoleSwitcher> createState() => _RoleSwitcherState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  final List<_WebItem> _items = [
-    _WebItem(title: 'Flutter', url: 'https://flutter.dev'),
-    _WebItem(title: 'Dart', url: 'https://dart.dev'),
-    _WebItem(title: 'GitHub', url: 'https://github.com'),
-  ];
+class _RoleSwitcherState extends State<RoleSwitcher> {
+  bool _isAdmin = false;
+  final TextEditingController _codeCtrl = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    _loadLastVisited();
+  void _toggleRole() {
+    if (_isAdmin) {
+      setState(() => _isAdmin = false);
+    } else {
+      // Very simple âadmin codeâ â replace with Firebase Auth in real app
+      if (_codeCtrl.text.trim() == 'admin123') {
+        setState(() => _isAdmin = true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid admin code')),
+        );
+      }
+    }
   }
 
-  Future<void> _loadLastVisited() async {
-    final prefs = await SharedPreferences.getInstance();
-    final lastUrl = prefs.getString('last_visited_url');
-    if (lastUrl != null) {
-      // Show a snackbar with quick access
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_isAdmin ? 'Shopkeeper Admin' : 'Marketplace'),
+        actions: [
+          IconButton(
+            icon: Icon(_isAdmin ? Icons.person : Icons.admin_panel_settings),
+            onPressed: _toggleRole,
+          )
+        ],
+      ),
+      body: _isAdmin ? const ShopAdminScreen() : const CustomerHomeScreen(),
+    );
+  }
+}
+```
+
+---
+
+**lib/models/product.dart**
+```dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class Product {
+  final String id;
+  final String name;
+  final String description;
+  final double price;
+  final String imageUrl;
+  final bool outOfStock;
+
+  Product({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.price,
+    required this.imageUrl,
+    required this.outOfStock,
+  });
+
+  factory Product.fromDoc(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return Product(
+      id: doc.id,
+      name: data['name'] ?? '',
+      description: data['description'] ?? '',
+      price: (data['price'] ?? 0).toDouble(),
+      imageUrl: data['imageUrl'] ?? '',
+      outOfStock: data['outOfStock'] ?? false,
+    );
+  }
+
+  Map<String, dynamic> toMap() => {
+        'name': name,
+        'description': description,
+        'price': price,
+        'imageUrl': imageUrl,
+        'outOfStock': outOfStock,
+      };
+}
+```
+
+---
+
+**lib/models/shop_state.dart**
+```dart
+class ShopState {
+  final bool isOpen;
+
+  ShopState({required this.isOpen});
+
+  factory ShopState.fromMap(Map<String, dynamic> map) {
+    return ShopState(isOpen: map['isOpen'] ?? true);
+  }
+
+  Map<String, dynamic> toMap() => {'isOpen': isOpen};
+}
+```
+
+---
+
+**lib/services/firestore_service.dart**
+```dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/product.dart';
+import '../models/shop_state.dart';
+
+class FirestoreService {
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  // ------------------- Products -------------------
+  Stream<List<Product>> productStream() {
+    return _db.collection('products').snapshots().map((snapshot) =>
+        snapshot.docs.map((doc) => Product.fromDoc(doc)).toList());
+  }
+
+  Future<void> addProduct(Product product) async {
+    await _db.collection('products').add(product.toMap());
+  }
+
+  Future<void> deleteProduct(String id) async {
+    await _db.collection('products').doc(id).delete();
+  }
+
+  Future<void> toggleOutOfStock(String id, bool outOfStock) async {
+    await _db.collection('products').doc(id).update({'outOfStock': outOfStock});
+  }
+
+  // ------------------- Shop State -------------------
+  Stream<ShopState?> shopStateStream() {
+    return _db
+        .collection('meta')
+        .doc('shop')
+        .snapshots()
+        .map((doc) => doc.exists ? ShopState.fromMap(doc.data()!) : null);
+  }
+
+  Future<void> setShopOpen(bool isOpen) async {
+    await _db.collection('meta').doc('shop').set({'isOpen': isOpen});
+  }
+}
+```
+
+---
+
+**lib/screens/customer_home.dart**
+```dart
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../services/firestore_service.dart';
+import '../models/product.dart';
+import '../models/shop_state.dart';
+import '../widgets/product_tile.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:intl/intl.dart';
+
+class CustomerHomeScreen extends StatelessWidget {
+  const CustomerHomeScreen({Key? key}) : super(key: key);
+
+  String _formatCurrency(double amount) =>
+      NumberFormat.currency(symbol: 'â¹', decimalDigits: 0).format(amount);
+
+  Future<void> _launchWhatsApp(BuildContext context, List<Product> cart) async {
+    if (cart.isEmpty) return;
+    double total = cart.fold(0, (sum, p) => sum + p.price);
+    String items = cart
+        .map((p) => '- ${p.name} (â¹${_formatCurrency(p.price)})')
+        .join('\n');
+    final message = Uri.encodeComponent(
+        'New Order:\n$items\n\nTotal: ${_formatCurrency(total)}');
+    final url = 'https://wa.me/<SHOP_WHATSAPP_NUMBER>?text=$message';
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url));
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Last visited: $lastUrl'),
-          action: SnackBarAction(
-            label: 'Open',
-            onPressed: () => _openWebView(lastUrl, 'Last Visited'),
-          ),
-        ),
+        const SnackBar(content: Text('Could not open WhatsApp')),
       );
     }
   }
 
-  void _openWebView(String url, String title) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('last_visited_url', url);
-    if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => WebViewScreen(url: url, title: title),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final firestore = context.read<FirestoreService>();
+    final shopState = context.watch<ShopState?>();
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dark Studio'),
-        centerTitle: true,
-      ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(12),
-        itemCount: _items.length,
-        itemBuilder: (context, index) {
-          final item = _items[index];
-          return Card(
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: ListTile(
-              title: Text(item.title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  )),
-              subtitle: Text(item.url,
-                  style: const TextStyle(color: Colors.white70)),
-              trailing: const Icon(Icons.open_in_browser, color: Colors.white70),
-              onTap: () => _openWebView(item.url, item.title),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class WebViewScreen extends StatefulWidget {
-  final String url;
-  final String title;
-  const WebViewScreen({Key? key, required this.url, required this.title})
-      : super(key: key);
-  @override
-  State<WebViewScreen> createState() => _WebViewScreenState();
-}
-
-class _WebViewScreenState extends State<WebViewScreen> {
-  bool _isLoading = true;
-  late final WebViewController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0x00000000))
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageFinished: (_) {
-            setState(() => _isLoading = false);
-          },
-          onWebResourceError: (error) {
-            // Simple error handling
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Error: ${error.description}')),
-            );
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse(widget.url));
-  }
-
-  Future<void> _refreshPage() async {
-    setState(() => _isLoading = true);
-    await _controller.reload();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final accent = Theme.of(context).colorScheme.secondary;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
+        title: const Text('Products'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _refreshPage,
-          ),
+            icon: const Icon(Icons.shopping_cart),
+            onPressed: () async {
+              // In a real app, maintain a proper cart state.
+              // Here we just fetch all available items as a demo.
+              final products = await firestore.productStream().first;
+              final available = products.where((p) => !p.outOfStock).toList();
+              await _launchWhatsApp(context, available);
+            },
+          )
         ],
       ),
-      body: Stack(
-        children: [
-          WebViewWidget(controller: _controller),
-          if (_isLoading)
-            const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFF00F5D4),
-              ),
+      body: shopState == null
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                if (!shopState.isOpen)
+                  Container(
+                    width: double.infinity,
+                    color: Colors.redAccent,
+                    padding: const EdgeInsets.all(8),
+                    child: const Text(
+                      'Shop is currently CLOSED',
+                      style: TextStyle(color: Colors.white),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                Expanded(
+                  child: StreamBuilder<List<Product>>(
+                    stream: firestore.productStream(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return const Center(child: Text('Error loading products'));
+                      }
+                      if (!snapshot.hasData) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      final products = snapshot.data!;
+                      if (products.isEmpty) {
+                        return const Center(child: Text('No products found'));
+                      }
+                      return ListView.builder(
+                        itemCount: products.length,
+                        itemBuilder: (_, index) => ProductTile(product: products[index]),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+}
+```
+
+---
+
+**lib/screens/shop_admin.dart**
+```dart
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../services/firestore_service.dart';
+import '../models/product.dart';
+import '../models/shop_state.dart';
+import '../widgets/product_tile.dart';
+
+class ShopAdminScreen extends StatefulWidget {
+  const ShopAdminScreen({Key? key}) : super(key: key);
+  @override
+  State<ShopAdminScreen> createState() => _ShopAdminScreenState();
+}
+
+class _ShopAdminScreenState extends State<ShopAdminScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameCtrl = TextEditingController();
+  final _descCtrl = TextEditingController();
+  final _priceCtrl = TextEditingController();
+  final _imageCtrl = TextEditingController();
+
+  Future<void> _addProduct() async {
+    if (!_formKey.currentState!.validate()) return;
+    final product = Product(
+      id: '',
+      name: _nameCtrl.text.trim(),
+      description: _descCtrl.text.trim(),
+      price: double.parse(_priceCtrl.text.trim()),
+      imageUrl: _imageCtrl.text.trim(),
+      outOfStock: false,
+    );
+    await context.read<FirestoreService>().addProduct(product);
+    _formKey.currentState!.reset();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final firestore = context.read<FirestoreService>();
+    final shopState = context.watch<ShopState?>();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Shop Admin Panel'),
+        actions: [
+          if (shopState != null)
+            Row(
+              children: [
+                const Text('OPEN'),
+                Switch(
+                  value: shopState.isOpen,
+                  onChanged: (val) => firestore.setShopOpen(val),
+                ),
+                const Text('CLOSED'),
+                const SizedBox(width: 12),
+              ],
             ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: accent,
-        child: const Icon(Icons.open_in_new),
-        onPressed: () async {
-          // Example of using http to fetch page title (optional)
-          final response = await http.get(Uri.parse(widget.url));
-          if (response.statusCode == 200) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Fetched ${response.body.length} bytes')),
-            );
-          }
-        },
-      ),
+      body: shopState == null
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Add New Product', style: TextStyle(fontSize: 18)),
+                  const SizedBox(height: 8),
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          controller: _nameCtrl,
+                          decoration: const InputDecoration(labelText: 'Name'),
+                          validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                        ),
+                        TextFormField(
+                          controller: _descCtrl,
+                          decoration: const InputDecoration(labelText: 'Description'),
+                          validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                        ),
+                        TextFormField(
+                          controller: _priceCtrl,
+                          decoration: const InputDecoration(labelText: 'Price'),
+                          keyboardType: TextInputType.number,
+                          validator: (v) => v == null || double.tryParse(v) == null
+                              ? 'Enter valid price'
+                              : null,
+                        ),
+                        TextFormField(
+                          controller: _imageCtrl,
+                          decoration: const InputDecoration(labelText: 'Image URL'),
+                          validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                        ),
+                        const SizedBox(height: 12),
+                        ElevatedButton(
+                          onPressed: _addProduct,
+                          child: const Text('Add Product'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 32),
+                  const Text('Product List', style: TextStyle(fontSize: 18)),
+                  const SizedBox(height: 8),
+                  StreamBuilder<List<Product>>(
+                    stream: firestore.productStream(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return const Text('Error loading products');
+                      }
+                      if (!snapshot.hasData) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      final products = snapshot.data!;
+                      if (products.isEmpty) {
+                        return const Text('No products yet');
+                      }
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: products.length,
+                        itemBuilder: (_, i) => AdminProductTile(product: products[i]),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
     );
   }
 }
 
-class _WebItem {
-  final String title;
-  final String url;
-  const _WebItem({required this.title, required this.url});
+class AdminProductTile extends StatelessWidget {
+  final Product product;
+  const AdminProductTile({Key? key, required this.product}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final firestore = context.read<FirestoreService>();
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: ListTile(
+        leading: Image.network(product.imageUrl, width: 60, height: 60, fit: BoxFit.cover),
+        title: Text(product.name),
+        subtitle: Text('â¹${product.price.toStringAsFixed(0)}'),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Switch(
+              value: !product.outOfStock,
+              onChanged: (val) => firestore.toggleOutOfStock(product.id, !val),
+              activeColor: Colors.green,
+              inactiveThumbColor: Colors.grey,
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () => firestore.deleteProduct(product.id),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
+```
+
+---
+
+**lib/widgets/product_tile.dart**
+```dart
+import 'package:flutter/material.dart';
+import '../models/product.dart';
+import 'package:intl/intl.dart';
+
+class ProductTile extends StatelessWidget {
+  final Product product;
+  const ProductTile({Key? key, required this.product}) : super(key: key);
+
+  String _formatCurrency(double amount) =>
+      NumberFormat.currency(symbol: 'â¹', decimalDigits: 0).format(amount);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+      child: ListTile(
+        leading: Image.network(
+          product.imageUrl,
+          width: 60,
+          height: 60,
+          fit: BoxFit.cover,
+        ),
+        title: Text(product.name),
+        subtitle: Text(_formatCurrency(product.price)),
+        trailing: product.outOfStock
+            ? const Text('Out of Stock',
+                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))
+            : const Icon(Icons.shopping_bag, color: Colors.green),
+      ),
+    );
+  }
+}
+```
+
+---
+
+**Directory Structure**
+
+```
+lib/
+ ââ main.dart
+ ââ models/
+ â    ââ product.dart
+ â    ââ shop_state.dart
+ ââ services/
+ â    ââ firestore_service.dart
+ ââ screens/
+ â    ââ customer_home.dart
+ â    ââ shop_admin.dart
+ ââ widgets/
+      ââ product_tile.dart
+pubspec.yaml
